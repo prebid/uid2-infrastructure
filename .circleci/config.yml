@@ -31,11 +31,12 @@ jobs:
       - run:
           name: terraform init & plan
           command: |
-            terraform init -chdir terraform -input=false
-            terraform plan -chdir terraform -out tfapply -var-file variables.dev.tfvars
+            terraform -chdir=terraform init -input=false
+            terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
       - persist_to_workspace:
           root: .
           paths:
+            - .
   apply:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
@@ -45,7 +46,7 @@ jobs:
       - run:
           name: terraform
           command: |
-            terraform apply -chdir terraform -auto-approve tfapply
+            terraform -chdir=terraform apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -59,7 +60,7 @@ jobs:
       - run:
           name: terraform create destroy plan
           command: |
-            terraform plan -chdir terraform -destroy -out tfdestroy -var-file variables.dev.tfvars
+            terraform -chdir=terraform plan -destroy -out tfdestroy -var-file variables.dev.tfvars
       - persist_to_workspace:
           root: .
           paths:
@@ -73,4 +74,4 @@ jobs:
       - run:
           name: terraform destroy
           command: |
-            terraform apply -chdir terraform -auto-approve tfdestroy
+            terraform -chdir=terraform apply -auto-approve tfdestroy
