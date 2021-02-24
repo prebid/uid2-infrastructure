@@ -31,8 +31,8 @@ jobs:
       - run:
           name: terraform init & plan
           command: |
-            terraform init -input=false
-            terraform plan -out tfapply -var-file variables.dev.tfvars
+            terraform init -chdir terraform -input=false
+            terraform plan -chdir terraform -out tfapply -var-file variables.dev.tfvars
       - persist_to_workspace:
           root: .
           paths:
@@ -45,7 +45,7 @@ jobs:
       - run:
           name: terraform
           command: |
-            terraform apply -auto-approve tfapply
+            terraform apply -chdir terraform -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -59,7 +59,7 @@ jobs:
       - run:
           name: terraform create destroy plan
           command: |
-            terraform plan -destroy -out tfdestroy -var-file variables.dev.tfvars
+            terraform plan -chdir terraform -destroy -out tfdestroy -var-file variables.dev.tfvars
       - persist_to_workspace:
           root: .
           paths:
@@ -73,4 +73,4 @@ jobs:
       - run:
           name: terraform destroy
           command: |
-            terraform apply -auto-approve tfdestroy
+            terraform apply -chdir terraform -auto-approve tfdestroy
