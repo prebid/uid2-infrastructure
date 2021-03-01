@@ -14,5 +14,11 @@ resource "google_container_cluster" "primary" {
   release_channel {
     channel = var.environment == "prod" ? "REGULAR" : "RAPID"
   }
-
+  node_config {
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    service_account = google_service_account.compute.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
 }
