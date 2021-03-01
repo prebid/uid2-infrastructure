@@ -9,7 +9,7 @@ variable "cloud" {
   default = "google"
 }
 
-variable "region" {
-  type        = string
+variable "regions" {
+  type        = list
   description = "List of GCP regions"
 }
