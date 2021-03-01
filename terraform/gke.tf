@@ -1,4 +1,5 @@
 resource "google_container_cluster" "primary" {
+  project = data.google_project.project.project_id
   for_each = toset(var.regions)
   name     = "uid2-${each.key}"
   # Regional master
