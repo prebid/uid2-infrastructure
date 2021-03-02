@@ -28,6 +28,11 @@ resource "google_container_cluster" "primary" {
       minimum = 3
       maximum = 30
     }
+    resource_limits {
+      resource_type = "memory"
+      minimum = 24
+      maximum = 240
+    }
   }
   depends_on = [ google_service_account_iam_binding.admin-account-iam ]
 }
