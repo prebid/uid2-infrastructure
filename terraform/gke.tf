@@ -21,4 +21,5 @@ resource "google_container_cluster" "primary" {
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
+  depends_on = [ google_service_account_iam_binding.admin-account-iam ]
 }
