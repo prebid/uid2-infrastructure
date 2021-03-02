@@ -13,4 +13,5 @@ resource "local_file" "kubeconfig" {
     for_each = data.template_file.kubeconfig
     content     = each.value.rendered
     filename = "${path.module}/kubecontext-${each.key}.yaml"
+    file_permission = "0600"
 }
