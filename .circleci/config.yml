@@ -63,7 +63,7 @@ jobs:
       - run:
           name: helm
           command: |
-            helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig terraform/kubecontext-us-west1.yaml
+            find ./terraform -name kubecontext-*.yaml -exec helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig {} \;
       - persist_to_workspace:
           root: .
           paths:
