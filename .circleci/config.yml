@@ -63,7 +63,7 @@ jobs:
       - run:
           name: helm
           command: |
-            helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --context kubecontext-us-west1.yaml
+            helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig kubecontext-us-west1.yaml
       - persist_to_workspace:
           root: .
           paths:
