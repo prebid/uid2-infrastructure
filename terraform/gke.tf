@@ -22,7 +22,7 @@ resource "google_container_cluster" "primary" {
     ]
   }
   workload_identity_config {
-  identity_namespace = "${data.google_project.project.project_id}.svc.id.goog"
+  identity_namespace = "${local.project_id}.svc.id.goog"
   }
   cluster_autoscaling {
     enabled = true
