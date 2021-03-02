@@ -9,6 +9,6 @@ resource "google_service_account_iam_binding" "admin-account-iam" {
   role               = "roles/iam.serviceAccountUser"
 
   members = [
-    "serviceAcccount:${google_service_account.terraform.email}",
+    "serviceAccount:${google_service_account.terraform.email}",
   ]
 }
