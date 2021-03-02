@@ -10,17 +10,20 @@ workflows:
 #            - plan-apply
       - apply:
           requires:
-            - hold-apply
-      - plan-destroy:
+            - plan-apply
+      - fleet-install:
           requires:
             - apply
-      - hold-destroy:
-          type: approval
-          requires:
-            - plan-destroy
-      - destroy:
-          requires:
-            - hold-destroy
+#      - plan-destroy:
+#          requires:
+#            - apply
+#      - hold-destroy:
+#          type: approval
+#          requires:
+#            - plan-destroy
+#      - destroy:
+#          requires:
+#            - hold-destroy
 jobs:
   plan-apply:
     working_directory: /tmp/project
