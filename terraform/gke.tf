@@ -3,7 +3,7 @@ resource "google_container_cluster" "primary" {
   name     = "uid2-${each.key}"
   # Regional master
   location = each.key
-  remove_default_node_pool = true
+  remove_default_node_pool = false
   initial_node_count       = 1
   ip_allocation_policy {
   }
@@ -20,6 +20,9 @@ resource "google_container_cluster" "primary" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+  }
+  workload_identity_config {
+  identity_namespace = "${data.google_project.project.project_id}.svc.id.goog"
   }
   cluster_autoscaling {
     enabled = true
