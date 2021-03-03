@@ -3,7 +3,7 @@ data "template_file" "fleet_agent_values" {
   for_each    = google_container_cluster.mission_control
   vars = {
     endpoint  = each.value.endpoint
-    cluster_ca_certificate = each.value.master_auth[0].cluster_ca_certificate
+    cluster_ca_certificate = indent(2, base64decode(each.value.master_auth[0].cluster_ca_certificate))
   }
 }
 
