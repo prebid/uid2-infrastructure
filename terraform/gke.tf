@@ -53,7 +53,7 @@ resource "google_container_cluster" "mission_control" {
     enable_private_endpoint = false
   }
   release_channel {
-    channel = var.environment == "REGULAR"
+    channel = "REGULAR"
   }
   node_config {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
