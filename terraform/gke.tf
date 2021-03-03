@@ -41,9 +41,9 @@ resource "google_container_cluster" "primary" {
 }
 
 resource "google_container_cluster" "mission_control" {
-  for_each = toset([var.regions[0]])
+  for_each = toset(["mission-control"])
   name     = "mission-control"
-  location = each.key
+  location = var.regions[0]
   remove_default_node_pool = false
   initial_node_count       = 1
   ip_allocation_policy {
