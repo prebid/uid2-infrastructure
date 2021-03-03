@@ -1,2 +1,2 @@
 environment = "dev"
-regions = ["us-west1"]
+regions = ["us-central1"]
