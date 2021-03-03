@@ -86,6 +86,11 @@ jobs:
           name: save-reegistration-token
           command: |
             kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
+      - run:
+          name: save-reegistration-token
+          command: |
+            cat ./terraform/fleet-agent-values.yaml
+
       # Install/update fleet-agents downstream
       - run:
           name: helm-fleet-agent-install
