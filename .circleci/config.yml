@@ -61,11 +61,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      # Install/update CRDs everywheere
+      # Install/update CRDs to fleet manager
       - run:
           name: helm-fleet-crd
           command: |
-            find ./terraform -name kubecontext-*.yaml -exec helm upgrade -n fleet-system --install --create-namespace --wait fleet-crd https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig {} \;
+            helm upgrade -n fleet-system --install --create-namespace --wait fleet-crd https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig --kubeconfig ./terraform/kubecontext-mission-control.yaml
       # Install fleet manager to mission control cluster
       - run:
           name: fleet-manager
