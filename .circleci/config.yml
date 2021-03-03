@@ -57,7 +57,7 @@ jobs:
   fleet-install:
     docker:
 #      - image: alpine/helm:3.5.2
-       - kiwigrid/gcloud-kubectl-helm:3.3.4-312.0.0-267
+      - image: kiwigrid/gcloud-kubectl-helm:3.3.4-312.0.0-267
     steps:
       - attach_workspace:
           at: .
