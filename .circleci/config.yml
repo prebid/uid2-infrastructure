@@ -85,7 +85,12 @@ jobs:
       - run:
           name: save-reegistration-token
           command: |
-            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 -d
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 -d >> ./terraform/fleet-agent-values.yaml
+      # Install/update fleet-agents downstream
+      - run:
+          name: helm-fleet-agent-install
+          command: |
+            find ./terraform -name kubecontext-*.yaml -exec helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
       - persist_to_workspace:
           root: .
           paths:
