@@ -1,6 +1,6 @@
 data "template_file" "kubeconfig" {
   template = file("${path.module}/templates/kubeconfig.yaml.tmpl")
-  for_each    = google_container_cluster.primary
+  for_each    = merge(google_container_cluster.primary, google_container_cluster.mission_control)
   vars = {
     token = data.google_client_config.provider.access_token
     endpoint  = each.value.endpoint
