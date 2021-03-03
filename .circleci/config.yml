@@ -56,14 +56,36 @@ jobs:
             - .
   fleet-install:
     docker:
-      - image: alpine/helm:3.5.2
+#      - image: alpine/helm:3.5.2
+       - kiwigrid/gcloud-kubectl-helm:3.3.4-312.0.0-267
     steps:
       - attach_workspace:
           at: .
+      # Install/update CRDs everywheere
       - run:
-          name: helm
+          name: helm-fleet-crd
           command: |
-            find ./terraform -name kubecontext-*.yaml -exec helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig {} \;
+            find ./terraform -name kubecontext-*.yaml -exec helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig {} \;
+      # Install fleet manager to mission control cluster
+      - run:
+          name: fleet-manager
+          command: |
+            helm upgrade -n fleet-system --install --create-namespace --wait fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/kubecontext-mission-control.yaml
+      # Create uid2 namespace
+      - run:
+          name: uid2-namespace
+          command: |
+            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+      # Generate cluster registration token
+      - run:
+          name: create-registration-token
+          command: |
+            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+      # Save cluster registration token
+      - run:
+          name: save-reegistration-token
+          command: |
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' | base64 --decode
       - persist_to_workspace:
           root: .
           paths:
