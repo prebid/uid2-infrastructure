@@ -85,7 +85,7 @@ jobs:
       - run:
           name: save-reegistration-token
           command: |
-            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 --d
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 -d
       - persist_to_workspace:
           root: .
           paths:
