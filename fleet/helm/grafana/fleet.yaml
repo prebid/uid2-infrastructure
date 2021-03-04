@@ -1,4 +1,4 @@
-defaultNamespace: uid2
+defaultNamespace: monitoring
 helm:
   releaseName: grafana
   repo: https://grafana.github.io/helm-charts
