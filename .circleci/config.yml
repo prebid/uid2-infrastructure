@@ -94,7 +94,7 @@ jobs:
       - run:
           name: install-fleet-gitrepo
           command: |
-            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"}, "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",'  ' "targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"}, "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",  '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
       - persist_to_workspace:
           root: .
           paths:
