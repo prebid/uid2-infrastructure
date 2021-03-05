@@ -91,6 +91,10 @@ jobs:
           name: helm-fleet-agent-install
           command: |
             find ./terraform -name kubecontext-*.yaml  ! -name kubecontext-mission-control.yaml -print -exec helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
+      - run:
+          name: install-fleet-gitrepo
+          command: |
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"}, "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",'  ' "targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
       - persist_to_workspace:
           root: .
           paths:
