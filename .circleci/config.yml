@@ -90,7 +90,7 @@ jobs:
       - run:
           name: helm-fleet-agent-install
           command: |
-            find ./terraform -name kubecontext-*.yaml  ! -name kubecontext-mission-control.yaml -print -exec helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml --set env=$CIRCLE_BRANCH fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
+            find ./terraform -name kubecontext-*.yaml  ! -name kubecontext-mission-control.yaml -print -exec helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
       - persist_to_workspace:
           root: .
           paths:
