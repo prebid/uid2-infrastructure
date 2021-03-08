@@ -1,0 +1,10 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: uid2-fleet
+  namespace: fleet-local
+spec:
+  branch: circleci-project-setup
+  paths:
+  - fleet/helm
+  repo: https://github.com/ivan-gusev/uid2-infrastructure

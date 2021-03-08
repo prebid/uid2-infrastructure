@@ -65,36 +65,41 @@ jobs:
       - run:
           name: helm-fleet-crd
           command: |
-            helm upgrade -n fleet-system --install --create-namespace --wait fleet-crd https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig ./terraform/kubecontext-mission-control.yaml
+            helm upgrade -n fleet-system --install --create-namespace --wait fleet-crd https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig ./terraform/gcp-kubecontext-mission-control.yaml
       # Install fleet manager to mission control cluster
       - run:
           name: fleet-manager
           command: |
-            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/kubecontext-mission-control.yaml
+            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/gcp-kubecontext-mission-control.yaml
       # Create uid2 namespace
       - run:
           name: uid2-namespace
           command: |
-            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
       # Generate cluster registration token
       - run:
           name: create-registration-token
           command: |
-            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
       # Save cluster registration token
       - run:
           name: save-reegistration-token
           command: |
-            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
       # Install/update fleet-agents downstream
       - run:
           name: helm-fleet-agent-install
           command: |
-            find ./terraform -name kubecontext-*.yaml  ! -name kubecontext-mission-control.yaml -print -exec helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
+            find ./terraform -name gcp-kubecontext-*.yaml  ! -name gcp-kubecontext-mission-control.yaml -print -exec \
+            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml \
+            --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 --set labels.cloud=gcp \
+            fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
       - run:
           name: install-fleet-gitrepo
           command: |
-            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"}, "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",  '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/kubecontext-mission-control.yaml" -f -
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"}, \
+            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",  \
+            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
       - persist_to_workspace:
           root: .
           paths:
