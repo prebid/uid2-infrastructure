@@ -1,4 +1,4 @@
-namespace: autoneg-system
+defaultNamespace: autoneg-system
 targetCustomizations:
 - name: lab
   clusterSelector:
