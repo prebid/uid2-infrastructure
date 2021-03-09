@@ -117,7 +117,7 @@ roleRef:
   name: autoneg-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: autoneg-system
   namespace: autoneg-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -130,7 +130,7 @@ roleRef:
   name: autoneg-manager-role
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: autoneg-system
   namespace: autoneg-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -143,7 +143,7 @@ roleRef:
   name: autoneg-proxy-role
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: autoneg-system
   namespace: autoneg-system
 ---
 apiVersion: v1
