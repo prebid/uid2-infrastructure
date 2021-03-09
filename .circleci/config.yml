@@ -95,11 +95,16 @@ jobs:
             --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 --set labels.cloud=gcp \
             fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
       - run:
-          name: install-fleet-gitrepo
+          name: install-fleet-gitrepo-mission-control
+          command: |
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "mission-control", "namespace": "fleet-local"},
+            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/gcp/mission-control"], "branch": ' \"$CIRCLE_BRANCH\", }}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+      - run:
+          name: install-fleet-gitrepo-uid2
           command: |
             echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"},
-            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/helm"], "branch": ' \"$CIRCLE_BRANCH\",  \
-            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2"}}}]}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/common", "fleet/gcp/uid2"], "branch": ' \"$CIRCLE_BRANCH\",  \
+            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2", "cloud": "gcp"}}}]}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
       - persist_to_workspace:
           root: .
           paths:
