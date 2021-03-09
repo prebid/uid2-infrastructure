@@ -1,0 +1,3 @@
+metadata:
+  annotations:
+    iam.gke.io/gcp-service-account=autoneg-system@$ox-lab-ivan-gusev.iam.gserviceaccount.com
