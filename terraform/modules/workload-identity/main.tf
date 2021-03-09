@@ -14,7 +14,7 @@
 
 locals {
   k8s_sa_gcp_derived_name = "serviceAccount:${var.project}.svc.id.goog[${var.namespace}/${var.name}]"
-  create_k8s_sa           = var.use_existing_k8s_sa ? 0 : 1
+#  create_k8s_sa           = var.use_existing_k8s_sa ? 0 : 1
 
 # This will cause terraform to block returninig outputs until the service account is created
 #  output_k8s_name      = var.use_existing_k8s_sa ? var.name : kubernetes_service_account.main[0].metadata[0].name

@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "k8s_service_account_name" {
-  value = local.output_k8s_name
-}
+#output "k8s_service_account_name" {
+#  value = local.output_k8s_name
+#}
 
-output "k8s_service_account_namespace" {
-  value = local.output_k8s_namespace
-}
+#output "k8s_service_account_namespace" {
+#  value = local.output_k8s_namespace
+#}
 
 output "gcp_service_account_email" {
   value = google_service_account.main.email
