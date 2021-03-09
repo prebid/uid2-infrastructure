@@ -5,7 +5,7 @@ resource "google_project_iam_binding" "project" {
   members = [
     module.workload_identity_autoneg-system.gcp_service_account_fqn,
   ]
-  depends_on [
+  depends_on = [
     google_project_service.cloudresourcemanager
   ]
 }
