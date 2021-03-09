@@ -28,8 +28,8 @@ variable "project" {
   type        = string
 }
 
-variable "use_existing_k8s_sa" {
-  description = "Use an existing kubernetes service account instead of creating one"
-  default     = false
-  type        = bool
-}
+#variable "use_existing_k8s_sa" {
+#  description = "Use an existing kubernetes service account instead of creating one"
+#  default     = false
+#  type        = bool
+#}

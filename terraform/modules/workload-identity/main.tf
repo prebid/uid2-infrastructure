@@ -16,21 +16,21 @@ locals {
   k8s_sa_gcp_derived_name = "serviceAccount:${var.project}.svc.id.goog[${var.namespace}/${var.name}]"
   create_k8s_sa           = var.use_existing_k8s_sa ? 0 : 1
 
-  # This will cause terraform to block returninig outputs until the service account is created
-  output_k8s_name      = var.use_existing_k8s_sa ? var.name : kubernetes_service_account.main[0].metadata[0].name
-  output_k8s_namespace = var.use_existing_k8s_sa ? var.namespace : kubernetes_service_account.main[0].metadata[0].namespace
+# This will cause terraform to block returninig outputs until the service account is created
+#  output_k8s_name      = var.use_existing_k8s_sa ? var.name : kubernetes_service_account.main[0].metadata[0].name
+#  output_k8s_namespace = var.use_existing_k8s_sa ? var.namespace : kubernetes_service_account.main[0].metadata[0].namespace
 }
 
-resource "kubernetes_service_account" "main" {
-  count = local.create_k8s_sa
-  metadata {
-    name      = var.name
-    namespace = var.namespace
-    annotations = {
-      "iam.gke.io/gcp-service-account" = google_service_account.main.email
-    }
-  }
-}
+#resource "kubernetes_service_account" "main" {
+#  count = local.create_k8s_sa
+#  metadata {
+#    name      = var.name
+#    namespace = var.namespace
+#    annotations = {
+#      "iam.gke.io/gcp-service-account" = google_service_account.main.email
+#    }
+#  }
+#}
 
 resource "google_service_account" "main" {
   account_id   = substr(var.name, 0, 30)
