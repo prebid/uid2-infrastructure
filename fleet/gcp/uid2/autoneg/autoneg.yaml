@@ -182,6 +182,7 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
+      serviceAccountName: autoneg-system
       containers:
       - args:
         - --secure-listen-address=0.0.0.0:8443
