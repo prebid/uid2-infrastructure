@@ -8,6 +8,7 @@ metadata:
     # Enable Standalone NEGS
     # See: https://cloud.google.com/kubernetes-engine/docs/how-to/standalone-neg
     cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+    anthos.cft.dev/autoneg: '{"name":"uid2-server", "max_rate_per_endpoint":1000}'
 spec:
   type: ClusterIP
   ports:
