@@ -1,3 +1,3 @@
-resource "google_project_service" "cloudresourcemanager" {
-  service = "cloudresourcemanager.googleapis.com"
+resource "google_project_services" "apis" {
+  services = ["cloudresourcemanager.googleapis.com", "servicemanagement.googleapis.com"]
 }
