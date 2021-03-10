@@ -1,3 +1,11 @@
-resource "google_project_services" "apis" {
-  services = ["cloudresourcemanager.googleapis.com", "servicemanagement.googleapis.com"]
+resource "google_project_service" "apis" {
+  for_each = toset([
+    "servicemanagement.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+  ])
+
+  service = each.key
+
+  project            = local.project_id
+  disable_on_destroy = false
 }
