@@ -12,6 +12,15 @@ resource "google_compute_global_address" "uid2_ip_2" {
   name = "uid2-2-${var.environment}"
 }
 
+resource "google_dns_record_set" "uid2-0_root" {
+  name = "frontend.${data.google_dns_managed_zone.uid2-0.dns_name}"
+  type = "A"
+  ttl  = 300
+
+  managed_zone =  data.google_dns_managed_zone.uid2-0.name
+
+  rrdatas = [ google_compute_global_address.uid2_ip_1.address, google_compute_global_address.uid2_ip_2.address ]
+}
 
 # SSL Cert
 resource "google_compute_managed_ssl_certificate" "uid2-0" {
