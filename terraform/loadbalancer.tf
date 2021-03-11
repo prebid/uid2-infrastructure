@@ -13,18 +13,17 @@ resource "google_compute_global_address" "uid2_ip_2" {
 }
 
 resource "google_dns_record_set" "uid2-0_root" {
-  name = "frontend.${data.google_dns_managed_zone.uid2-0.dns_name}"
+  name = data.google_dns_managed_zone.uid2-0.dns_name
   type = "A"
   ttl  = 300
 
   managed_zone =  data.google_dns_managed_zone.uid2-0.name
-
   rrdatas = [ google_compute_global_address.uid2_ip_1.address, google_compute_global_address.uid2_ip_2.address ]
 }
 
 # SSL Cert
-resource "google_compute_managed_ssl_certificate" "uid2-0" {
-  name     = "uid2-0"
+resource "google_compute_managed_ssl_certificate" "uid2-v1" {
+  name     = "uid2-v1"
   managed {
     domains = [
       data.google_dns_managed_zone.uid2-0.dns_name
@@ -68,7 +67,7 @@ resource "google_compute_target_https_proxy" "uid2_https_proxy" {
   url_map     = google_compute_url_map.uid2_v1.self_link
 
   ssl_certificates = [
-    google_compute_managed_ssl_certificate.uid2-0.self_link,
+    google_compute_managed_ssl_certificate.uid2-v1.self_link,
   ]
 }
 
