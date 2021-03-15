@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 # Branch filter
 # https://discuss.circleci.com/t/can-you-filter-on-a-workflow-level/30624/5
@@ -63,8 +63,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: set live environment name based on branch name
+          command: |
+            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
+      - run:
           name: terraform init & plan
           command: |
+            . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
+            eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
+            eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             terraform -chdir=terraform init -input=false
             terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
       - persist_to_workspace:
@@ -78,8 +85,15 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: set live environment name based on branch name
+          command: |
+            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
+      - run:
           name: terraform
           command: |
+            . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
+            eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
+            eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             terraform -chdir=terraform apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
