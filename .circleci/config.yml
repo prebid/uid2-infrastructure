@@ -1,0 +1,135 @@
+version: 2
+workflows:
+  version: 2
+  plan_approve_apply:
+    jobs:
+      - plan-apply
+#      - hold-apply:
+#          type: approval
+#          requires:
+#            - plan-apply
+      - apply:
+          requires:
+            - plan-apply
+      - fleet-install:
+          requires:
+            - apply
+#      - plan-destroy:
+#          requires:
+#            - apply
+#      - hold-destroy:
+#          type: approval
+#          requires:
+#            - plan-destroy
+#      - destroy:
+#          requires:
+#            - hold-destroy
+jobs:
+  plan-apply:
+    working_directory: /tmp/project
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    steps:
+      - checkout
+      - run:
+          name: terraform init & plan
+          command: |
+            terraform -chdir=terraform init -input=false
+            terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  apply:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: terraform
+          command: |
+            terraform -chdir=terraform apply -auto-approve tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  fleet-install:
+    docker:
+#      - image: alpine/helm:3.5.2
+      - image: kiwigrid/gcloud-kubectl-helm:3.3.4-312.0.0-267
+    steps:
+      - attach_workspace:
+          at: .
+      # Install/update CRDs to fleet manager
+      - run:
+          name: helm-fleet-crd
+          command: |
+            helm upgrade -n fleet-system --install --create-namespace --wait fleet-crd https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-crd-0.3.3.tgz --kubeconfig ./terraform/gcp-kubecontext-mission-control.yaml
+      # Install fleet manager to mission control cluster
+      - run:
+          name: fleet-manager
+          command: |
+            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/gcp-kubecontext-mission-control.yaml
+      # Create uid2 namespace
+      - run:
+          name: uid2-namespace
+          command: |
+            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+      # Generate cluster registration token
+      - run:
+          name: create-registration-token
+          command: |
+            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+      # Save cluster registration token
+      - run:
+          name: save-reegistration-token
+          command: |
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
+      # Install/update fleet-agents downstream
+      - run:
+          name: helm-fleet-agent-install
+          command: |
+            find ./terraform -name gcp-kubecontext-*.yaml  ! -name gcp-kubecontext-mission-control.yaml -print -exec \
+            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml \
+            --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 --set labels.cloud=gcp \
+            fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
+      - run:
+          name: install-fleet-gitrepo-mission-control
+          command: |
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "mission-control", "namespace": "fleet-local"},
+            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/gcp/mission-control"], "branch": ' \"$CIRCLE_BRANCH\"}} | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+      - run:
+          name: install-fleet-gitrepo-uid2
+          command: |
+            echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"},
+            "spec": {"repo": "https://github.com/ivan-gusev/uid2-infrastructure", "paths": ["fleet/common", "fleet/gcp/uid2"], "branch": ' \"$CIRCLE_BRANCH\",  \
+            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2", "cloud": "gcp"}}}]}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+#  plan-destroy:
+#    docker:
+#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: terraform create destroy plan
+#          command: |
+#            terraform -chdir=terraform plan -destroy -out tfdestroy -var-file variables.dev.tfvars
+#      - persist_to_workspace:
+#          root: .
+#          paths:
+#            - .
+#  destroy:
+#    docker:
+#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: terraform destroy
+#          command: |
+#            terraform -chdir=terraform apply -auto-approve tfdestroy

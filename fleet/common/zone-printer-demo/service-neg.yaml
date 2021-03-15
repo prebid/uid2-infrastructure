@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoneprinter-neg
+  labels:
+    app: zoneprinter
+  annotations:
+    # Enable Standalone NEGS
+    # See: https://cloud.google.com/kubernetes-engine/docs/how-to/standalone-neg
+    cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+    anthos.cft.dev/autoneg: '{"name":"uid2-server", "max_rate_per_endpoint":1000}'
+spec:
+  type: ClusterIP
+  ports:
+    - name: zoneprinter-http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: zoneprinter
