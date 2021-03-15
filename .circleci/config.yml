@@ -1,19 +1,49 @@
 version: 2
+
+# Branch filter
+# https://discuss.circleci.com/t/can-you-filter-on-a-workflow-level/30624/5
+dev_only: &dev_only
+  filters:
+    branches:
+      only:
+        - live-dev
+qa_only: &qa_only
+  filters:
+    branches:
+      only:
+        - live-qa
+prod_only: &prod_only
+  filters:
+    branches:
+      only:
+        - live-prod
+live_only: &live_only
+  filters:
+    branches:
+      only:
+        - live-prod
+        - live-qa
+        - live-dev
+
 workflows:
   version: 2
   plan_approve_apply:
     jobs:
-      - plan-apply
-#      - hold-apply:
-#          type: approval
-#          requires:
-#            - plan-apply
+      - plan-apply:
+          <<: *live_only
+      - hold-apply:
+          type: approval
+          requires:
+            - plan-apply
+          <<: *prod_only
       - apply:
           requires:
             - plan-apply
+          <<: *live_only
       - fleet-install:
           requires:
             - apply
+          <<: *live_only
 #      - plan-destroy:
 #          requires:
 #            - apply
@@ -24,6 +54,7 @@ workflows:
 #      - destroy:
 #          requires:
 #            - hold-destroy
+
 jobs:
   plan-apply:
     working_directory: /tmp/project
