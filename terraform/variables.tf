@@ -1,6 +1,6 @@
 variable "environment" {
   type        = string
-  description = "dev|prod"
+  description = "dev|qa|prod"
 }
 
 variable "cloud" {

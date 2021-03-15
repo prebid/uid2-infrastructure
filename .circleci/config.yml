@@ -74,7 +74,7 @@ jobs:
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
             terraform -chdir=terraform init -input=false
-            terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
+            TF_VAR_environment=${environment} terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
       - persist_to_workspace:
           root: .
           paths:
@@ -96,7 +96,7 @@ jobs:
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
-            terraform -chdir=terraform apply -auto-approve tfapply
+            TF_VAR_environment=${environment} terraform -chdir=terraform apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -139,7 +139,7 @@ jobs:
           command: |
             find ./terraform -name gcp-kubecontext-*.yaml  ! -name gcp-kubecontext-mission-control.yaml -print -exec \
             helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml \
-            --set labels.env=$CIRCLE_BRANCH --set labels.fleet=uid2 --set labels.cloud=gcp \
+            --set labels.env=`echo $CIRCLE_BRANCH | sed 's/live-//'` --set labels.fleet=uid2 --set labels.cloud=gcp \
             fleet-agent https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-agent-0.3.3.tgz --kubeconfig {} \;
       - run:
           name: install-fleet-gitrepo-mission-control
