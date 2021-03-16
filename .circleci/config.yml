@@ -29,8 +29,7 @@ workflows:
   version: 2
   plan_approve_apply:
     jobs:
-      - plan-apply:
-          <<: *live_only
+      - plan-apply
       - hold-apply:
           type: approval
           requires:
@@ -65,7 +64,8 @@ jobs:
       - run:
           name: set live environment name based on branch name
           command: |
-            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
+            echo -n 'export environment=' >> $BASH_ENV
+            echo $CIRCLE_BRANCH | sed 's/live-//' | awk '{ if ($1 == "dev" || $1 == "qa" || $1 == "prod") print $1; else print "dev"; }' >> $BASH_ENV
       - run:
           name: terraform init & plan
           command: |
