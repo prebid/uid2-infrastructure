@@ -127,6 +127,12 @@ jobs:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
     steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: set live environment name based on branch name
+          command: |
+            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
       - run:
           name: terraform init & plan stage2
           command: |
@@ -151,6 +157,10 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: set live environment name based on branch name
+          command: |
+            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
       - run:
           name: terraform apply stage2
           command: |
