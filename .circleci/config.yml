@@ -74,6 +74,7 @@ jobs:
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             export TF_VAR_regions=`eval echo \\$${environment}_TF_VAR_regions_B64 |base64 -d`
             eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
+            export AWS_DEFAULT_REGION=us-west-1
             terraform -chdir=terraform/stage1 init -input=false
             TF_VAR_environment=${environment} terraform -chdir=terraform/stage1 plan -out tfapply
       - persist_to_workspace:
@@ -96,6 +97,7 @@ jobs:
             . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
+            export AWS_DEFAULT_REGION=us-west-1
             eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
             TF_VAR_environment=${environment} terraform -chdir=terraform/stage1 apply -auto-approve tfapply
       - persist_to_workspace:
