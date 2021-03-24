@@ -1,13 +1,8 @@
-resource "google_service_account" "terraform" {
-  account_id   = "terraform"
-  display_name = "Terraform service account"
-}
-
 data "google_iam_policy" "statebucketadmin" {
   binding {
     role = "roles/storage.admin"
     members = [
-      "serviceAccount:${google_service_account.terraform.email}",
+      "serviceAccount:terraform@${data.google_client_config.provider.project}.iam.gserviceaccount.com",
       # Need distribution group on GSuite
       "user:ivan.gusev@openx.com",
     ]
