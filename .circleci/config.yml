@@ -74,11 +74,12 @@ jobs:
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
             eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
+            export TF_VAR_environment=${environment}
             export TF_VAR_regions=`eval echo \\$${environment}_TF_VAR_regions_B64 |base64 -d`
-            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/stage1/backend.tf
             export AWS_DEFAULT_REGION=us-west-1
             terraform -chdir=terraform/stage1 init -input=false
-            TF_VAR_environment=${environment} terraform -chdir=terraform/stage1 plan -out tfapply
+            terraform -chdir=terraform/stage1 plan -out tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -102,8 +103,8 @@ jobs:
             eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
             eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
             export AWS_DEFAULT_REGION=us-west-1
-            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
-            TF_VAR_environment=${environment} terraform -chdir=terraform/stage1 apply -auto-approve tfapply
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/stage1/backend.tf
+            terraform -chdir=terraform/stage1 apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
