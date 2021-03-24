@@ -20,21 +20,6 @@ provider "helm" {
   }
 }
 
-resource "helm_release" "nginx_ingress" {
-  name       = "nginx-ingress-controller"
-
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "nginx-ingress-controller"
-  namespace = "test"
-  create_namespace = true
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-}
-
-
 module "eks_cluster" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.region
