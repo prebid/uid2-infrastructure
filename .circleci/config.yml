@@ -29,8 +29,7 @@ workflows:
   version: 2
   plan_approve_apply:
     jobs:
-      - plan-apply:
-          <<: *live_only
+      - plan-apply
       - hold-apply:
           type: approval
           requires:
@@ -65,16 +64,22 @@ jobs:
       - run:
           name: set live environment name based on branch name
           command: |
-            echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
+            echo -n 'export environment=' >> $BASH_ENV
+            echo $CIRCLE_BRANCH | sed 's/live-//' | awk '{ if ($1 == "dev" || $1 == "qa" || $1 == "prod") print $1; else print "dev"; }' >> $BASH_ENV
       - run:
           name: terraform init & plan
           command: |
             . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
-            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
-            terraform -chdir=terraform init -input=false
-            TF_VAR_environment=${environment} terraform -chdir=terraform plan -out tfapply -var-file variables.dev.tfvars
+            eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
+            eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
+            export TF_VAR_environment=${environment}
+            export TF_VAR_regions=`eval echo \\$${environment}_TF_VAR_regions_B64 |base64 -d`
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/stage1/backend.tf
+            export AWS_DEFAULT_REGION=us-west-1
+            terraform -chdir=terraform/stage1 init -input=false
+            terraform -chdir=terraform/stage1 plan -out tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -95,8 +100,11 @@ jobs:
             . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
-            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/backend.tf
-            TF_VAR_environment=${environment} terraform -chdir=terraform apply -auto-approve tfapply
+            eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
+            eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
+            export AWS_DEFAULT_REGION=us-west-1
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/stage1/backend.tf
+            terraform -chdir=terraform/stage1 apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -165,7 +173,7 @@ jobs:
 #      - run:
 #          name: terraform create destroy plan
 #          command: |
-#            terraform -chdir=terraform plan -destroy -out tfdestroy -var-file variables.dev.tfvars
+#            terraform -chdir=terraform plan -destroy -out tfdestroy 
 #      - persist_to_workspace:
 #          root: .
 #          paths:
