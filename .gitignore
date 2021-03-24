@@ -6,6 +6,8 @@
 *.tfstate.*
 .terraform.lock.hcl
 backend.tf
+*_generated.tf
+outputs/
 # Crash log files
 crash.log
 

@@ -29,19 +29,32 @@ workflows:
   version: 2
   plan_approve_apply:
     jobs:
-      - plan-apply
-      - hold-apply:
+      - plan-stage1
+      - hold-stage1:
           type: approval
           requires:
-            - plan-apply
+            - plan-stage1
           <<: *prod_only
-      - apply:
+      - apply-stage1:
           requires:
-            - plan-apply
+            - plan-stage1
+          <<: *live_only
+      - plan-stage2:
+          requires:
+            - apply-stage1
+          <<: *live_only
+      - hold-stage2:
+          type: approval
+          requires:
+            - plan-stage2
+          <<: *prod_only
+      - apply-stage2:
+          requires:
+            - plan-stage2
           <<: *live_only
       - fleet-install:
           requires:
-            - apply
+            - apply-stage2
           <<: *live_only
 #      - plan-destroy:
 #          requires:
@@ -55,7 +68,7 @@ workflows:
 #            - hold-destroy
 
 jobs:
-  plan-apply:
+  plan-stage1:
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
@@ -67,9 +80,9 @@ jobs:
             echo -n 'export environment=' >> $BASH_ENV
             echo $CIRCLE_BRANCH | sed 's/live-//' | awk '{ if ($1 == "dev" || $1 == "qa" || $1 == "prod") print $1; else print "dev"; }' >> $BASH_ENV
       - run:
-          name: terraform init & plan
+          name: terraform init & plan stage1
           command: |
-            . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
+            . $BASH_ENV
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
@@ -84,7 +97,7 @@ jobs:
           root: .
           paths:
             - .
-  apply:
+  apply-stage1:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
     steps:
@@ -95,9 +108,9 @@ jobs:
           command: |
             echo export environment=$CIRCLE_BRANCH | sed 's/live-//' >> $BASH_ENV
       - run:
-          name: terraform
+          name: terraform apply stage1
           command: |
-            . $BASH_ENV # For some reason CircleCI does not do this, although documentation says it should
+            . $BASH_ENV
             eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
             eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
             eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
@@ -105,6 +118,50 @@ jobs:
             export AWS_DEFAULT_REGION=us-west-1
             eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d > terraform/stage1/backend.tf
             terraform -chdir=terraform/stage1 apply -auto-approve tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  plan-stage2:
+    working_directory: /tmp/project
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    steps:
+      - run:
+          name: terraform init & plan stage2
+          command: |
+            . $BASH_ENV
+            eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
+            eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
+            eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
+            eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
+            export TF_VAR_environment=${environment}
+            export TF_VAR_regions=`eval echo \\$${environment}_TF_VAR_regions_B64 |base64 -d`
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d |sed '/prefix/ s/"$/\/stage2\"/' > terraform/stage2/backend.tf
+            export AWS_DEFAULT_REGION=us-west-1
+            terraform -chdir=terraform/stage2 init -input=false
+            terraform -chdir=terraform/stage2 plan -out tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  apply-stage2:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: terraform apply stage2
+          command: |
+            . $BASH_ENV
+            eval export GOOGLE_PROJECT=\$${environment}_GOOGLE_PROJECT
+            eval export GOOGLE_CREDENTIALS=\$${environment}_GOOGLE_CREDENTIALS
+            eval export AWS_ACCESS_KEY_ID=\$${environment}_AWS_ACCESS_KEY_ID
+            eval export AWS_SECRET_ACCESS_KEY=\$${environment}_AWS_SECRET_ACCESS_KEY
+            export AWS_DEFAULT_REGION=us-west-1
+            eval echo \$${environment}_TERRAFORM_BACKEND_B64 | base64 -d |sed '/prefix/ s/"$/\/stage2\"/' > terraform/stage2/backend.tf
+            terraform -chdir=terraform/stage2 apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -125,22 +182,22 @@ jobs:
       - run:
           name: fleet-manager
           command: |
-            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/gcp-kubecontext-mission-control.yaml
+            helm upgrade -n fleet-system --install --create-namespace --wait --values ./terraform/fleet-agent-values.yaml fleet https://github.com/rancher/fleet/releases/download/v0.3.3/fleet-0.3.3.tgz --kubeconfig ./terraform/outputs/gcp-kubecontext-mission-control.yaml
       # Create uid2 namespace
       - run:
           name: uid2-namespace
           command: |
-            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+            echo '{ "apiVersion": "v1", "kind": "Namespace", "metadata": { "name": "uid2" }}' | kubectl apply --kubeconfig="./terraform/outputs/gcp-kubecontext-mission-control.yaml" -f -
       # Generate cluster registration token
       - run:
           name: create-registration-token
           command: |
-            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+            echo '{"kind": "ClusterRegistrationToken", "apiVersion": "fleet.cattle.io/v1alpha1","metadata": {"name": "uid2-fleet", "namespace": "uid2"},"spec": {"ttl": "2h"}}' | kubectl apply --kubeconfig="./terraform/outputs/gcp-kubecontext-mission-control.yaml" -f -
       # Save cluster registration token
       - run:
           name: save-reegistration-token
           command: |
-            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
+            kubectl -n uid2 get secret uid2-fleet -o 'jsonpath={.data.values}' --kubeconfig="./terraform/outputs/gcp-kubecontext-mission-control.yaml" | base64 -d | grep token: >> ./terraform/fleet-agent-values.yaml 
       # Install/update fleet-agents downstream
       - run:
           name: helm-fleet-agent-install
@@ -153,13 +210,13 @@ jobs:
           name: install-fleet-gitrepo-mission-control
           command: |
             echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "mission-control", "namespace": "fleet-local"},
-            "spec": {"repo": ' \"https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME\", '"paths": ["fleet/gcp/mission-control"], "branch": ' \"$CIRCLE_BRANCH\"}} | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+            "spec": {"repo": ' \"https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME\", '"paths": ["fleet/gcp/mission-control"], "branch": ' \"$CIRCLE_BRANCH\"}} | kubectl apply --kubeconfig="./terraform/outputs/gcp-kubecontext-mission-control.yaml" -f -
       - run:
           name: install-fleet-gitrepo-uid2
           command: |
             echo '{ "apiVersion": "fleet.cattle.io/v1alpha1", "kind": "GitRepo", "metadata": { "name": "uid2-infrastructure", "namespace": "uid2"},
             "spec": {"repo": ' \"https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME\", '"paths": ["fleet/common", "fleet/gcp/uid2"], "branch": ' \"$CIRCLE_BRANCH\",  \
-            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2", "cloud": "gcp"}}}]}}' | kubectl apply --kubeconfig="./terraform/gcp-kubecontext-mission-control.yaml" -f -
+            '"targets": [{"name": "all","clusterSelector": {"matchLabels": {"fleet": "uid2", "cloud": "gcp"}}}]}}' | kubectl apply --kubeconfig="./terraform/outputs/gcp-kubecontext-mission-control.yaml" -f -
       - persist_to_workspace:
           root: .
           paths:
