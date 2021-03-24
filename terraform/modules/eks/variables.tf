@@ -1,8 +1,10 @@
 variable "region" {
-  type = string
   default = "us-west-1"
 }
 
+variable "environment" {
+  default = "dev"
+}
 variable "instance_type" {
   default = "t2.medium"
 }

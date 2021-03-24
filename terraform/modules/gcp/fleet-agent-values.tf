@@ -10,6 +10,6 @@ data "template_file" "fleet_agent_values" {
 resource "local_file" "fleet_agent_values" {
     for_each = data.template_file.fleet_agent_values
     content     = each.value.rendered
-    filename = "${path.module}/fleet-agent-values.yaml"
+    filename = "${path.root}/../outputs/fleet-agent-values.yaml"
     file_permission = "0600"
 }

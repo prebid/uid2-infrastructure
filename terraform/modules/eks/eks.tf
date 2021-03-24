@@ -6,13 +6,34 @@ data "aws_eks_cluster_auth" "cluster" {
   name = module.eks_cluster.cluster_id
 }
 
-#provider "kubernetes" {
-#  host                   = data.aws_eks_cluster.cluster.endpoint
-#  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-#  token                  = data.aws_eks_cluster_auth.cluster.token
-#  load_config_file       = false
-#  version                = "~> 1.9"
-#}
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+  load_config_file       = false
+}
+
+provider "helm" {
+  kubernetes {
+    host     = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
+}
+
+resource "helm_release" "nginx_ingress" {
+  name       = "nginx-ingress-controller"
+
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "nginx-ingress-controller"
+  namespace = "test"
+  create_namespace = true
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+}
 
 
 module "eks_cluster" {
