@@ -26,6 +26,7 @@ module "eks_cluster" {
   cluster_version = "1.19"
   subnets         = [ aws_subnet.eks[0].id, aws_subnet.eks[1].id ]
   vpc_id          = aws_vpc.eks.id
+  enable_irsa     = true
   # cluster_endpoint_private_access = true
 
   node_groups = {
