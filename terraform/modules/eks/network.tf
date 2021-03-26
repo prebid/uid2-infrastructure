@@ -32,5 +32,6 @@ resource "aws_subnet" "eks" {
 
   tags = {
     Name = "eks"
+    "kubernetes.io/role/elb" = "1"
   }
 }
