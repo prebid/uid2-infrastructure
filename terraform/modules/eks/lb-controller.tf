@@ -7,7 +7,7 @@ resource "helm_release" "aws-load-balancer-controller" {
 
   set {
     name  = "clusterName"
-    value = var.region
+    value = local.cluster_name
   }
   set {
     name  = "serviceAccount.create"

@@ -31,7 +31,7 @@ resource "aws_subnet" "eks" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "eks"
     "kubernetes.io/role/elb" = "1"
+    "kubernetes.io/cluster/${local.cluster_name}" = "owned"
   }
 }

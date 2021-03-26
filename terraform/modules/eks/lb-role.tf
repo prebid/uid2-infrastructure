@@ -1,5 +1,5 @@
 resource "aws_iam_role" "loadbalancer_controller" {
-  name                = "loadbalancer-controller-${var.region}"
+  name                = "loadbalancer-controller-${local.cluster_name}"
   assume_role_policy  = data.aws_iam_policy_document.federated.json
   managed_policy_arns = ["arn:aws:iam::602039007070:policy/AWSLoadBalancerControllerIAMPolicy"]  # TBD: replace with output from stage1
 }

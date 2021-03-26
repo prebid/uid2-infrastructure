@@ -27,7 +27,7 @@ provider "helm" {
 
 module "eks_cluster" {
   source          = "terraform-aws-modules/eks/aws"
-  cluster_name    = var.region
+  cluster_name    = local.cluster_name
   cluster_version = "1.19"
   subnets         = [ aws_subnet.eks[0].id, aws_subnet.eks[1].id ]
   vpc_id          = aws_vpc.eks.id
