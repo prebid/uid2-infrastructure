@@ -1,3 +1,4 @@
+/*
 # CRD for aws loadbalancer-controller
 #  $ wget https://raw.githubusercontent.com/aws/eks-charts/master/stable/aws-load-balancer-controller/crds/crds.yaml
 #  $ echo 'yamldecode(file("my-manifest-file.yaml"))' | terraform console
@@ -247,3 +248,4 @@ manifest = {
 #  }
 }
 }
+*/
