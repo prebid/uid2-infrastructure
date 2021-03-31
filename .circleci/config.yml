@@ -52,10 +52,10 @@ workflows:
           requires:
             - plan-stage2
           <<: *live_only
-      - fleet-install:
-          requires:
-            - apply-stage2
-          <<: *live_only
+#      - fleet-install:
+#          requires:
+#            - apply-stage2
+#          <<: *live_only
 #      - plan-destroy:
 #          requires:
 #            - apply
