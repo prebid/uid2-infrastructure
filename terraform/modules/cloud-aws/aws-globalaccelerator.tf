@@ -16,3 +16,11 @@ resource "aws_globalaccelerator_listener" "uid2" {
     to_port   = 80
   }
 }
+
+
+resource "local_file" "ga" {
+    count = length(var.regions) > 0 ? 1 : 0
+    content     = templatefile("${path.module}/templates/ga.tf.tpl", { regions = var.regions, listener_arn = aws_globalaccelerator_listener.uid2[var.regions[0]].id })
+    filename = "${path.root}/../stage2/ga_generated.tf"
+    file_permission = "0644"
+}
