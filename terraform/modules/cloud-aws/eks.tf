@@ -1,5 +1,6 @@
+# Generare providers for all regions so we can delete resources when region is removed
 resource "local_file" "providers" {
-    content     = templatefile("${path.module}/templates/providers.tf.tpl", { regions = var.regions })
+    content     = templatefile("${path.module}/templates/providers.tf.tpl", { regions = local.aws_regions })
     filename = "${path.root}/../stage2/providers_generated.tf"
     file_permission = "0644"
 }
