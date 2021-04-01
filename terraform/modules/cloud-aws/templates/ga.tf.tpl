@@ -11,6 +11,4 @@ resource "aws_globalaccelerator_endpoint_group" "uid2" {
     weight      = 100
   }
 %{ endfor ~}
-
-
 }

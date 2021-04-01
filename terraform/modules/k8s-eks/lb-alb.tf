@@ -33,6 +33,19 @@ resource "aws_alb_listener" "uid" {
   }
 }
 
+resource "aws_alb_listener" "uid_ssl" {
+  load_balancer_arn = aws_alb.uid2.id
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.aws_acm_certificate_arn
+
+  default_action {
+    target_group_arn = aws_alb_target_group.uid2.id
+    type             = "forward"
+  }
+}
+
 # Loadbalancer security group
 resource "aws_security_group" "lb_uid2" {
   name_prefix   = "uid2-lb-"
@@ -41,6 +54,13 @@ resource "aws_security_group" "lb_uid2" {
   ingress {
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

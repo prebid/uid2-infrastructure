@@ -1,6 +1,18 @@
 locals {
   # Exposed *pod* ports for services we need to expose
   health_check_k8s_destination_ports = ["8000", "8080", "80"]
+  
+  ssl_domains = [
+      trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, "."),
+      trimsuffix("gcp.${data.google_dns_managed_zone.uid2-0.dns_name}", "."),
+  ]
+}
+
+resource "random_pet" "cert" {
+  keepers = {
+    # Generate a new pet name each time something changes in environment or region
+    ssl_domains = join(",", local.ssl_domains)
+  }
 }
 
 # IP reservation
@@ -13,7 +25,7 @@ resource "google_compute_global_address" "uid2_ip_2" {
 }
 
 resource "google_dns_record_set" "uid2-0_root" {
-  name = data.google_dns_managed_zone.uid2-0.dns_name
+  name = "gcp.${data.google_dns_managed_zone.uid2-0.dns_name}"
   type = "A"
   ttl  = 300
 
@@ -23,11 +35,12 @@ resource "google_dns_record_set" "uid2-0_root" {
 
 # SSL Cert
 resource "google_compute_managed_ssl_certificate" "uid2-v1" {
-  name     = "uid2-v1"
+  name     = random_pet.cert.id
   managed {
-    domains = [
-      data.google_dns_managed_zone.uid2-0.dns_name
-    ]
+    domains = local.ssl_domains
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
