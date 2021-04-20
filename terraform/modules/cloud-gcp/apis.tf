@@ -3,6 +3,9 @@ resource "google_project_service" "apis" {
     "servicemanagement.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "domains.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "gkehub.googleapis.com",
+    "multiclusteringress.googleapis.com"
   ])
 
   service = each.key

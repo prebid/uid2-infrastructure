@@ -1,10 +1,10 @@
 locals {
   # Exposed *pod* ports for services we need to expose
   health_check_k8s_destination_ports = ["8000", "8080", "80"]
-  
+
   ssl_domains = [
-      trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, "."),
-      trimsuffix("gcp.${data.google_dns_managed_zone.uid2-0.dns_name}", "."),
+    trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, "."),
+    trimsuffix("gcp.${data.google_dns_managed_zone.uid2-0.dns_name}", "."),
   ]
 }
 
@@ -29,13 +29,13 @@ resource "google_dns_record_set" "uid2-0_root" {
   type = "A"
   ttl  = 300
 
-  managed_zone =  data.google_dns_managed_zone.uid2-0.name
-  rrdatas = [ google_compute_global_address.uid2_ip_1.address, google_compute_global_address.uid2_ip_2.address ]
+  managed_zone = data.google_dns_managed_zone.uid2-0.name
+  rrdatas      = [google_compute_global_address.uid2_ip_1.address, google_compute_global_address.uid2_ip_2.address]
 }
 
 # SSL Cert
 resource "google_compute_managed_ssl_certificate" "uid2-v1" {
-  name     = random_pet.cert.id
+  name = random_pet.cert.id
   managed {
     domains = local.ssl_domains
   }
@@ -115,7 +115,7 @@ resource "google_compute_health_check" "http_root" {
 resource "google_compute_firewall" "glb-health-checks" {
   name        = "glb-health-checks"
   description = "Health Checks from GLB to uid2-server"
-  network = "default"
+  network     = "default"
 
   allow {
     protocol = "tcp"
@@ -135,7 +135,7 @@ resource "google_compute_backend_service" "uid2_server" {
   timeout_sec = 10
 
   lifecycle {
-    ignore_changes = [ backend ]
+    ignore_changes = [backend]
   }
 
   health_checks = [google_compute_health_check.http_status.self_link]
@@ -154,9 +154,9 @@ resource "google_compute_url_map" "uid2_v1" {
     name            = "uid2"
     default_service = google_compute_backend_service.uid2_server.self_link
 
-#    path_rule {
-#      paths   = ["/custom"]
-#      service = google_compute_backend_service.custom.self_link
-#    }
+    #    path_rule {
+    #      paths   = ["/custom"]
+    #      service = google_compute_backend_service.custom.self_link
+    #    }
   }
 }

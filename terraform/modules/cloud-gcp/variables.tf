@@ -4,7 +4,7 @@ variable "environment" {
 }
 
 variable "regions" {
-  type        = list
+  type        = list(any)
   description = "List of GCP regions"
 }
 
