@@ -1,0 +1,7 @@
+membership: cluster-2
+project: 
+  number: "1021856939514"
+  name: ox-lab-ivan-gusev
+version: 20210416-01-00
+# Base64 encoded credentials
+credentials:

@@ -1,0 +1,379 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+  name: gke-connect
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: connect-agent-sa
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: gkeconnect-psp
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+spec:
+  privileged: false
+  # Required to prevent escalations to root.
+  allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  volumes:
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  # Assume that persistentVolumes set up by the cluster admin are safe to use.
+  - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    # Require the container to run without root privileges.
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    # seLinux is a required field, but most configurations don't use it
+    # and if we set it to anything other than RunAsAny, then the host OS
+    # has to have the SELinux security module loaded.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    # This range allows all GIDs except for root, which is 0.
+    ranges:
+    - min: 1
+      max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    # This range allows all GIDs except for root, which is 0.
+    ranges:
+    - min: 1
+      max: 65535
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gkeconnect-psp:role
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - gkeconnect-psp
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gkeconnect-psp:rolebinding
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gkeconnect-psp:role
+subjects:
+- kind: Group
+  name: system:serviceaccounts:gke-connect
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-updater
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-updater
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-updater
+subjects:
+- kind: User
+  name: cloud-gke-multicluster-connect-agent-automation@system.gserviceaccount.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gke-connect-agent-{{ .Values.version }}
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - namespaces
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gke-connect-impersonation-{{ .Values.version }}
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - cloud-client-api-gke-oidc@system.gserviceaccount.com
+  - cloud-gke-multicluster-connect-agent-automation@system.gserviceaccount.com
+  - service-{{ .Values.project.number }}@gcp-sa-gkehub.iam.gserviceaccount.com
+  resources:
+  - users
+  verbs:
+  - impersonate
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gke-connect-impersonation-{{ .Values.version }}
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gke-connect-impersonation-{{ .Values.version }}
+subjects:
+- kind: ServiceAccount
+  name: connect-agent-sa
+  namespace: gke-connect
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gke-connect-feature-authorizer-{{ .Values.version }}
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: service-{{ .Values.project.number }}@gcp-sa-gkehub.iam.gserviceaccount.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gke-connect-agent-{{ .Values.version }}
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gke-connect-agent-{{ .Values.version }}
+subjects:
+- kind: ServiceAccount
+  name: connect-agent-sa
+  namespace: gke-connect
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+  name: gke-connect-namespace-getter
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+  name: gke-connect-namespace-getter
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gke-connect-namespace-getter
+subjects:
+- kind: ServiceAccount
+  name: connect-agent-sa
+  namespace: gke-connect
+---
+apiVersion: v1
+data:
+  http-proxy: ""
+kind: Secret
+type: Opaque
+metadata:
+  name: http-proxy
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: "runtime/default"
+  labels:
+    app: gke-connect-agent
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+  name: gke-connect-agent-{{ .Values.version }}
+  namespace: gke-connect
+spec:
+  selector:
+    matchLabels:
+      app: gke-connect-agent
+      hub.gke.io/project: "{{ .Values.project.name }}"
+  template:
+    metadata:
+      labels:
+        app: gke-connect-agent
+        hub.gke.io/project: "{{ .Values.project.name }}"
+      name: gke-connect-pod-{{ .Values.version }}
+    spec:
+      containers:
+      - command:
+        - gkeconnect_bin/bin/gkeconnect_agent
+        env:
+        - name: https_proxy
+          valueFrom:
+            secretKeyRef:
+              key: http-proxy
+              name: http-proxy
+        - name: http_proxy
+          valueFrom:
+            secretKeyRef:
+              key: http-proxy
+              name: http-proxy
+        - name: no_proxy
+          value: $(KUBERNETES_SERVICE_HOST)
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: GKECONNECT_API_ENDPOINT
+          value: gkeconnect.googleapis.com:443
+        - name: PROJECT_NUMBER
+          value: "{{ .Values.project.number }}"
+        - name: ENDPOINT_RESOURCE
+          value: "//gkehub.googleapis.com/projects/{{ .Values.project.number }}/locations/global/memberships/{{ .Values.membership }}"
+        - name: GCP_SA_KEY
+          value: /etc/creds/creds-gcp.json
+        - name: CONNECTION_CLASS
+          value: DEFAULT
+        image: gcr.io/gkeconnect/gkeconnect-gce:{{ .Values.version }}
+        name: gke-connect-agent-{{ .Values.version }}
+        resources:
+          limits:
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+        volumeMounts:
+        - mountPath: /etc/creds
+          name: creds-gcp
+          readOnly: true
+        - mountPath: /etc/proxy_config
+          name: http-proxy
+          readOnly: true
+      restartPolicy: Always
+      securityContext:
+        fsGroup: 10001
+        runAsNonRoot: true
+        runAsGroup: 10001
+        runAsUser: 10001
+      serviceAccountName: connect-agent-sa
+      volumes:
+      - name: creds-gcp
+        secret:
+          secretName: creds-gcp
+      - name: http-proxy
+        secret:
+          secretName: http-proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    monitoring.gke.io/scrape: "true"
+  name: gke-connect-monitoring
+  namespace: gke-connect
+  labels:
+    hub.gke.io/project: "{{ .Values.project.name }}"
+    version: {{ .Values.version }}
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    name: gke-connect-monitoring
+  selector:
+    app: gke-connect-agent
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: creds-gcp
+  namespace: gke-connect
+data:
+  creds-gcp.json: "{{ .Values.credentials }}"

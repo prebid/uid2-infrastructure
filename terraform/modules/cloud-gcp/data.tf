@@ -16,3 +16,7 @@ locals {
   # Creative way to obtain project id without enabling Cloud Resource Manager API
   project_id = split(".", split("@", google_service_account.compute.email)[1])[0]
 }
+
+data "google_project" "this" {
+  project_id = local.project_id
+}

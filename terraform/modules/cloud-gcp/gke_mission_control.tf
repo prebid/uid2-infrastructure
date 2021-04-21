@@ -1,4 +1,3 @@
-
 resource "google_container_cluster" "mission_control" {
   for_each                 = toset(["mission-control"])
   name                     = "mission-control"
@@ -38,4 +37,21 @@ resource "google_container_cluster" "mission_control" {
     }
   }
   depends_on = [google_service_account_iam_binding.admin-account-iam]
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = google_container_cluster.mission_control["mission-control"].endpoint
+    cluster_ca_certificate = base64decode(google_container_cluster.mission_control["mission-control"].master_auth.0.cluster_ca_certificate)
+    token                  = data.google_client_config.provider.access_token
+  }
+}
+
+module "gke_connect" {
+  source         = "../gke-connect-agent"
+  cluster_id     = google_container_cluster.mission_control["mission-control"].id
+  cluster_name   = google_container_cluster.mission_control["mission-control"].name
+  project_number = data.google_project.this.number
+  project_id     = local.project_id
+  depends_on  = [google_project_service.apis]
 }
