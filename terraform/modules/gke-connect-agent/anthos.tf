@@ -21,7 +21,7 @@ resource "helm_release" "gke-connect" {
   ]
   set {
     name  = "project.number"
-    value = var.project_number
+    value = local.project_number
     type  = "string"
   }
   set {

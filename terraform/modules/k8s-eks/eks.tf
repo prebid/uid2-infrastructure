@@ -40,3 +40,10 @@ module "eks_cluster" {
     }
   }
 }
+
+module "gke_connect" {
+  source         = "../gke-connect-agent"
+  cluster_id     = local.cluster_name
+  cluster_name   = local.cluster_name
+  project_id     = var.mission_control_project_id
+}

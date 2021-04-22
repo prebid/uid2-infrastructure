@@ -21,3 +21,7 @@ variable "domain_managed_zone" {
 variable "global_resources_region" {
   default = "us-west-1" # Do not change unless absolutely required
 }
+
+# Project name for Anthos
+variable "mission_control_project_id" {
+}
