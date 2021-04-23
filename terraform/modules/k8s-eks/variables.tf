@@ -16,6 +16,3 @@ variable "node_port" {
 
 variable "aws_acm_certificate_arn" {
 }
-
-variable "mission_control_project_id" {
-}

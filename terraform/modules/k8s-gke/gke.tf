@@ -51,5 +51,6 @@ module "gke_connect" {
   source         = "../gke-connect-agent"
   cluster_id     = google_container_cluster.this.id
   cluster_name   = google_container_cluster.this.name
+  project_number = data.google_project.this.number
   project_id     = local.project_id
 }
