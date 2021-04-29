@@ -23,6 +23,7 @@ resource "google_container_cluster" "this" {
     channel = var.environment == "prod" ? "REGULAR" : "RAPID"
   }
   node_config {
+    preemptible  = true
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = var.compute_service_account
     oauth_scopes = [
