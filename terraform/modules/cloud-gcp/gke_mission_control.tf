@@ -14,7 +14,6 @@ resource "google_container_cluster" "mission_control" {
     channel = "REGULAR"
   }
   node_config {
-    preemptible  = true
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = google_service_account.compute.email
     oauth_scopes = [
