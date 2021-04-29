@@ -7,6 +7,7 @@ resource "helm_release" "autoneg" {
 }
 
 resource "helm_release" "zone-printer" {
+  count            = 0 # Moving to CD pipeline
   name             = "zone-printer"
   chart            = "${path.module}/helm/zone-printer"
   namespace        = "zone-printer"
