@@ -48,6 +48,7 @@ provider "helm" {
 }
 
 module "gke_connect" {
+  count          = 0
   source         = "../gke-connect-agent"
   cluster_id     = google_container_cluster.mission_control["mission-control"].id
   cluster_name   = google_container_cluster.mission_control["mission-control"].name
