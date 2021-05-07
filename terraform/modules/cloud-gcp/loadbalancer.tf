@@ -97,7 +97,7 @@ resource "google_compute_health_check" "http_status" {
   http_health_check {
     port_specification = "USE_SERVING_PORT"
     proxy_header       = "NONE"
-    request_path       = "/status"
+    request_path       = "/ops/healthcheck"
   }
 }
 
