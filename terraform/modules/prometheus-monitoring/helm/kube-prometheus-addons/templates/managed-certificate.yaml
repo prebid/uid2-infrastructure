@@ -1,0 +1,15 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ .Values.tlsCertificateName }}
+spec:
+  domains:
+    - grafana.{{ .Values.tlsDomain }}
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ .Values.tlsThanosCertificateName }}
+spec:
+  domains:
+    - thanos-{{ .Values.cluster }}.{{ .Values.tlsDomain }}

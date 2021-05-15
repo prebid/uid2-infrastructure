@@ -1,0 +1,54 @@
+grafana:
+  sidecar:
+    datasources:
+      defaultDatasourceEnabled: false
+      createPrometheusReplicasDatasource: false
+  additionalDataSources:
+  - access: proxy
+    isDefault: true
+    name: Prometheus
+    type: prometheus
+    url: http://thanos-query:9090/
+  - access: proxy
+    isDefault: false
+    name: Prometheus-direct
+    type: prometheus
+    url: http://prometheus-operated:9090/
+  grafana.ini:
+    auth:
+      disable_login_form: true
+      disable_signout_menu: true
+    auth.anonymous:
+      enabled: true
+      org_role: Editor
+    users:
+      viewers_can_edit: true
+  ingress:
+    enabled: true
+    path: /*
+    annotations:
+      networking.gke.io/managed-certificates: grafana-ssl-cert
+      kubernetes.io/ingress.global-static-ip-name: grafana
+  service:
+    annotations:
+      beta.cloud.google.com/backend-config: '{"default": "iap-config"}'
+    type: NodePort
+prometheus:
+  service:
+    annotations:
+      cloud.google.com/backend-config: '{"default": "thanos-config"}'
+      cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
+  thanosService:
+    enabled: true
+  prometheusSpec:
+    thanos:
+      image: quay.io/thanos/thanos:v0.20.1
+      version: v0.20.1
+    externalLabels:
+      environment: dev
+      location: us-east1
+      cluster: mission-control
+      stack: uid2
+#      objectStorageConfig:
+#        key: thanos.yaml
+#        name: thanos-objstore-config

@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanos-query-{{ template "prometheus-operator-addons.fullname" . }}
+  labels:
+    app: {{ template "prometheus-operator-addons.name" . }}
+    chart: {{ template "prometheus-operator-addons.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    # Reload if our certificate is changed.
+    # secret.reloader.stakater.com/reload: "thanos-grpc-local-certificate"
+spec:
+  replicas: {{ .Values.thanos.query.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "prometheus-operator-addons.name" . }}
+      release: {{ .Release.Name }}
+      thanos-component: query
+  template:
+    metadata:
+      labels:
+        app: {{ template "prometheus-operator-addons.name" . }}
+        release: {{ .Release.Name }}
+        thanos-component: query
+    spec:
+      containers:
+{{ if .Values.thanos.query.nginxMux }}
+      - name: nginx-mux
+        image: nginx:1.17.8
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /etc/nginx
+            name: thanos-nginx-config
+          - mountPath: /etc/certs
+            name: thanos-grpc-local-cert
+{{- if .Values.thanos.mTLSEnabled }}
+          - mountPath: /etc/certs/ca
+            name: thanos-ca
+{{- end }}
+        ports:
+          - containerPort: 11901
+            name: grpc
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 11901
+            scheme: HTTPS
+{{ end }}
+      - name: thanos-query
+        image: {{ or .Values.thanos.query.image .Values.thanos.image}}:{{ (or .Values.thanos.query.version .Values.thanos.version) }}
+        args:
+        - "query"
+        - "--log.level={{ .Values.thanos.logLevel }}"
+        - "--query.replica-label=prometheus_replica"
+{{- if not .Values.thanos.query.nginxMux }}
+        - "--grpc-server-tls-cert=/etc/certs/tls.crt"
+        - "--grpc-server-tls-key=/etc/certs/tls.key"
+{{ end }}
+{{ if .Values.isGlobal }}
+{{- range .Values.thanos.grpcBackends }}
+        - "--store={{ . }}"
+{{- end }}
+{{ else }}
+        - "--store=dnssrv+_grpc._tcp.thanos-sidecars-prometheus.{{ .Release.Namespace }}.svc"
+{{ end}}
+        ports:
+        - name: http
+          containerPort: 10902
+{{ if .Values.thanos.query.nginxMux }}
+        - name: grpc-backend
+          containerPort: 10901
+{{ else }}
+        - name: grpc
+          containerPort: 10901
+{{ end }}
+        livenessProbe:
+          httpGet:
+            path: /graph
+            port: 10902
+        readinessProbe:
+          httpGet:
+            path: /graph
+            port: 10902
+        resources:
+{{ toYaml .Values.thanos.query.resources | indent 10 }}
+        volumeMounts:
+          - name: thanos-grpc-local-cert
+            mountPath: /etc/certs
+      volumes:
+        - name: thanos-grpc-local-cert
+          secret:
+            secretName: thanos-grpc-local-certificate
+{{ if .Values.thanos.query.nginxMux }}
+        - name: thanos-nginx-config
+          configMap:
+            name: thanos-query-nginx-config
+{{- if .Values.thanos.mTLSEnabled }}
+        - name: thanos-ca
+          secret:
+            secretName: thanos-ca-key-pair
+{{- end }}
+{{ end }}
