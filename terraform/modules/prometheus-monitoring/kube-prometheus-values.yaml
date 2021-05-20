@@ -40,6 +40,7 @@ prometheus:
   thanosService:
     enabled: true
   prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
     thanos:
       image: quay.io/thanos/thanos:v0.20.1
       version: v0.20.1
