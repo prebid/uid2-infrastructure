@@ -10,9 +10,8 @@ metadata:
   annotations:
     cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
     beta.cloud.google.com/backend-config: '{"default": "thanos-ingress"}'
-    cloud.google.com/neg: '{"ingress":true}'
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: {{ template "prometheus-operator-addons.name" . }}
     release: {{ .Release.Name }}
@@ -22,3 +21,4 @@ spec:
     protocol: TCP
     targetPort: grpc
     name: grpc
+    nodePort: 30333

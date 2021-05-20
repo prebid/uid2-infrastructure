@@ -6,4 +6,4 @@ spec:
   healthCheck:
     type: HTTPS
     requestPath: /
-    port: 10901
+    port: 30333
