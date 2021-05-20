@@ -8,7 +8,6 @@ cluster:
 project:
 domain:
 isGlobal: false
-regionalStaticIpName: thanos
 thanos:
   grpcBackends: []
   image: quay.io/thanos/thanos

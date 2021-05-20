@@ -1,20 +1,13 @@
 resource "google_compute_global_address" "grafana" {
   name = var.is_global ? "grafana" : "grafana-${var.cluster}"
 }
-
-resource "google_compute_address" "grafana" {
-  name = var.is_global ? "grafana-regional" : "grafana-${var.cluster}-regional"
-  address_type = "EXTERNAL"
-  region = var.location
-}
-
 resource "google_dns_record_set" "grafana" {
   name = "grafana-${var.cluster}.${data.google_dns_managed_zone.uid2-0.dns_name}"
   type = "A"
   ttl  = 300
 
   managed_zone = data.google_dns_managed_zone.uid2-0.name
-  rrdatas      = [google_compute_address.grafana.address]
+  rrdatas      = [google_compute_global_address.grafana.address]
 }
 
 resource "google_dns_record_set" "grafana-global" {
@@ -24,24 +17,17 @@ resource "google_dns_record_set" "grafana-global" {
   ttl   = 300
 
   managed_zone = data.google_dns_managed_zone.uid2-0.name
-  rrdatas      = [google_compute_address.grafana.address]
+  rrdatas      = [google_compute_global_address.grafana.address]
 }
 
 resource "google_compute_global_address" "thanos" {
   name = var.is_global ? "thanos" : "thanos-${var.cluster}"
 }
-
-resource "google_compute_address" "thanos" {
-  name = var.is_global ? "thanos-regional" : "thanos-${var.cluster}-regional"
-  address_type = "EXTERNAL"
-  region = var.location
-}
-
 resource "google_dns_record_set" "thanos" {
   name = "thanos-${var.cluster}.${data.google_dns_managed_zone.uid2-0.dns_name}"
   type = "A"
   ttl  = 300
 
   managed_zone = data.google_dns_managed_zone.uid2-0.name
-  rrdatas      = [google_compute_address.thanos.address]
+  rrdatas      = [google_compute_global_address.thanos.address]
 }

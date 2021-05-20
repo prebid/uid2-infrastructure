@@ -41,10 +41,6 @@ resource "helm_release" "kube-prometheus-addons" {
     name  = "cluster"
     value = var.cluster
   }
-  set { 
-    name = "regionalStaticIpName"
-    value = var.is_global? "thanos-regional" : "thanos-${var.cluster}-regional"
-  }
   set {
     name  = "isGlobal"
     value = var.is_global
@@ -74,7 +70,7 @@ resource "helm_release" "kube-prometheus" {
     value = "{thanos-${var.cluster}.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}}"
   }
   set {
-    name  = "grafana.ingress.annotations.\"kubernetes\\.io/ingress\\.regional-static-ip-name\""
-    value = var.is_global? "grafana-regional" : "grafana-${var.cluster}-regional"
+    name  = "grafana.ingress.annotations.\"kubernetes\\.io/ingress\\.global-static-ip-name\""
+    value = var.is_global? "grafana" : "grafana-${var.cluster}"
   }
 }
