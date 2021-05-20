@@ -59,8 +59,8 @@ spec:
         - "--grpc-server-tls-key=/etc/certs/tls.key"
 {{ end }}
 {{ if .Values.isGlobal }}
-{{- range .Values.thanos.grpcBackends }}
         - "--grpc-client-tls-secure"
+{{- range .Values.thanos.grpcBackends }}
         - "--store={{ . }}"
 {{- end }}
 {{ else }}

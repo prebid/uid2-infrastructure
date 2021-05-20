@@ -77,4 +77,20 @@ resource "helm_release" "kube-prometheus" {
     name  = "grafana.ingress.annotations.\"kubernetes\\.io/ingress\\.global-static-ip-name\""
     value = var.is_global? "grafana" : "grafana-${var.cluster}"
   }
+  set {
+    name  = "prometheus.prometheusSpec.externalLabels.environment"
+    value = var.environment
+  }
+  set {
+    name  = "prometheus.prometheusSpec.externalLabels.location"
+    value = var.location
+  }
+  set {
+    name  = "prometheus.prometheusSpec.externalLabels.cluster"
+    value = var.cluster
+  }
+  set {
+    name  = "prometheus.prometheusSpec.externalLabels.stack"
+    value = "uid2"
+  }
 }

@@ -78,6 +78,7 @@ module "mission_control_monitoring" {
   domain_managed_zone = var.domain_managed_zone
   location = var.regions[0]
   cluster = "mission-control"
+  environment = var.environment
   is_global = true
   iap_brand = google_iap_brand.mission_control.name
   thanos_query_backends = [ "thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
