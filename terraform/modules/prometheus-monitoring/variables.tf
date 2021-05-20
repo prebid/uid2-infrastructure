@@ -1,9 +1,6 @@
 variable "project_id" {
   default = "uid2-dev"
 }
-variable "brand" {
-  default = "projects/284014127113/brands/284014127113"
-}
 
 variable "domain_managed_zone" {
   default = "uid2-0"
@@ -25,4 +22,9 @@ variable "is_global" {
 variable "thanos_query_backends" {
   description = "List of thanos query backends"
   default     = []
+}
+
+
+variable "iap_brand" {
+  description = "google_iap_brand.name"
 }

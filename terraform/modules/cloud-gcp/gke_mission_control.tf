@@ -1,11 +1,9 @@
-/*
 resource "google_iap_brand" "mission_control" {
   support_email     = "terraform@uid2-dev.iam.gserviceaccount.com"
   application_title = "Mission Control Grafana"
-  project           = var.project_id
+  project           = local.project_id
   depends_on = [ google_project_service.apis ]
 }
-*/
 
 resource "google_container_cluster" "mission_control" {
   for_each                 = toset(["mission-control"])
@@ -77,10 +75,10 @@ resource "google_iap_web_iam_binding" "binding" {
 module "mission_control_monitoring" {
   source = "../prometheus-monitoring"
   project_id = local.project_id
-  brand = "projects/284014127113/brands/284014127113"
   domain_managed_zone = var.domain_managed_zone
   location = var.regions[0]
   cluster = "mission-control"
   is_global = true
+  iap_brand = google_iap_brand.mission_control.name
   thanos_query_backends = [ "thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
 }

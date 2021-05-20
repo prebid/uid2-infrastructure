@@ -8,3 +8,7 @@ variable "environment" {
 
 variable "compute_service_account" {
 }
+
+variable "domain_managed_zone" {
+  default = "uid2-0"
+}

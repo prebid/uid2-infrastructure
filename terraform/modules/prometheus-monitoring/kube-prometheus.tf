@@ -9,11 +9,10 @@ resource "google_project_service" "apis" {
   disable_on_destroy = false
 }
 
-resource "google_iap_client" "mission_control" {
-  display_name = "Test Client"
-  brand        = var.brand
+resource "google_iap_client" "grafana" {
+  display_name = "Grafana IAP client"
+  brand        = var.iap_brand
 }
-
 
 locals {
   backend_yaml = yamlencode({
@@ -36,7 +35,7 @@ resource "helm_release" "kube-prometheus-addons" {
   }
   set {
     name  = "iapClientId"
-    value = google_iap_client.mission_control.client_id
+    value = google_iap_client.grafana.client_id
   }
   set {
     name  = "cluster"
@@ -48,7 +47,7 @@ resource "helm_release" "kube-prometheus-addons" {
   }
   set_sensitive {
     name  = "iapClientSecret"
-    value = google_iap_client.mission_control.secret
+    value = google_iap_client.grafana.secret
   }
   depends_on = [helm_release.kube-prometheus]
 }
