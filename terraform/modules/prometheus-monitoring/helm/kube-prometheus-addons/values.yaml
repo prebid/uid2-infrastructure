@@ -9,6 +9,7 @@ project:
 domain:
 isGlobal: false
 thanos:
+  globalStaticIpName: thanos
   grpcBackends: []
   image: quay.io/thanos/thanos
   version: v0.20.1

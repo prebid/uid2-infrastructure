@@ -42,6 +42,10 @@ resource "helm_release" "kube-prometheus-addons" {
     value = var.cluster
   }
   set {
+    name  = "thanos.globalStaticIpName"
+    value = var.is_global? "thanos" : "thanos-${var.cluster}"
+  }
+  set {
     name  = "isGlobal"
     value = var.is_global
   }
