@@ -4,5 +4,6 @@ module "gke_${region}" {
   environment = "${environment}"
   region = "${region}"
   compute_service_account = "${compute_service_account}"
+  iap_brand = "${iap_brand}"
 }
 %{ endfor ~}

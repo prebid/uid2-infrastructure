@@ -5,5 +5,6 @@ module "monitoring" {
   location = var.region
   cluster = google_container_cluster.this.name
   is_global = false
+  iap_brand = var.iap_brand
   # thanos_query_backends = []
 }
