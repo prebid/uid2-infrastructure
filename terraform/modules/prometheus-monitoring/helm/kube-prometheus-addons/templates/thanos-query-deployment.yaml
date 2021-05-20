@@ -60,6 +60,7 @@ spec:
 {{ end }}
 {{ if .Values.isGlobal }}
 {{- range .Values.thanos.grpcBackends }}
+        - "--grpc-client-tls-secure"
         - "--store={{ . }}"
 {{- end }}
 {{ else }}
