@@ -1,7 +1,7 @@
 resource "google_iap_brand" "mission_control" {
-  support_email     = "terraform@uid2-dev.iam.gserviceaccount.com"
-  application_title = "Mission Control Grafana"
-  project           = local.project_id
+  support_email     = "igusev@prebid.org"
+  application_title = "grafana-iap"
+  project           = data.google_project.this.number
   depends_on = [ google_project_service.apis ]
 }
 
