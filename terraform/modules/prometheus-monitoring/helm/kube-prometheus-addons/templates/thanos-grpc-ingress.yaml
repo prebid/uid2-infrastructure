@@ -12,7 +12,7 @@ metadata:
 # certificate using our own small ca.
   annotations:
     networking.gke.io/managed-certificates: {{ .Values.tlsThanosCertificateName }}
-    kubernetes.io/ingress.global-static-ip-name: thanos
+    kubernetes.io/ingress.regional-static-ip-name: {{ .Values.regionalStaticIpName }}
 {{- if .Values.thanos.mTLSEnabled }}
     # This will make public IP be stored in our "private" dns zone, so name
     # won't be resoved from "outside".
