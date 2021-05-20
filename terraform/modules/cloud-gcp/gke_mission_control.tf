@@ -66,6 +66,14 @@ module "gke_connect" {
   depends_on  = [google_project_service.apis]
 }
 
+resource "google_iap_web_iam_binding" "binding" {
+  project = local.project_id
+  role = "roles/iap.httpsResourceAccessor"
+  members = [
+    "domain:prebid.org",
+  ]
+}
+
 module "mission_control_monitoring" {
   source = "../prometheus-monitoring"
   project_id = local.project_id
