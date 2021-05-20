@@ -1,5 +1,5 @@
 resource "google_compute_global_address" "grafana" {
-  name = "grafana"
+  name = var.is_global ? "grafana" : "grafana-${var.cluster}"
 }
 resource "google_dns_record_set" "grafana" {
   name = "grafana-${var.cluster}.${data.google_dns_managed_zone.uid2-0.dns_name}"
@@ -21,7 +21,7 @@ resource "google_dns_record_set" "grafana-global" {
 }
 
 resource "google_compute_global_address" "thanos" {
-  name = "thanos"
+  name = var.is_global ? "thanos" : "thanos-${var.cluster}"
 }
 resource "google_dns_record_set" "thanos" {
   name = "thanos-${var.cluster}.${data.google_dns_managed_zone.uid2-0.dns_name}"

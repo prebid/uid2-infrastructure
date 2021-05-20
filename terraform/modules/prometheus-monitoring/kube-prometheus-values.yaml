@@ -28,7 +28,6 @@ grafana:
     path: /*
     annotations:
       networking.gke.io/managed-certificates: grafana-ssl-cert
-      kubernetes.io/ingress.global-static-ip-name: grafana
   service:
     annotations:
       beta.cloud.google.com/backend-config: '{"default": "iap-config"}'

@@ -24,7 +24,6 @@ variable "thanos_query_backends" {
   default     = []
 }
 
-
 variable "iap_brand" {
   description = "google_iap_brand.name"
 }
