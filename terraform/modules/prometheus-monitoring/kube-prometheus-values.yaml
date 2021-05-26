@@ -26,6 +26,7 @@ grafana:
   ingress:
     enabled: true
     path: /*
+    pathType: ImplementationSpecific
     annotations:
       networking.gke.io/managed-certificates: grafana-ssl-cert
   service:
