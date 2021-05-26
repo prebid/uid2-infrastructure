@@ -24,3 +24,8 @@ data "google_project" "this" {
 data "google_compute_network" "default" {
   name = "default"
 }
+
+data "google_compute_subnetwork" "mission_control" {
+  name   = "default"
+  region = var.regions[0]
+}
