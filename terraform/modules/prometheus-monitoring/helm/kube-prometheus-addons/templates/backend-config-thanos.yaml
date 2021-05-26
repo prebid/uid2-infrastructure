@@ -7,3 +7,5 @@ spec:
     type: HTTPS
     requestPath: /
     port: 30333
+  securityPolicy:
+    name: "thanos-ingress"

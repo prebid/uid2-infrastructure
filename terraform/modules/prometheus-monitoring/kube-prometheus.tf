@@ -43,7 +43,7 @@ resource "helm_release" "kube-prometheus-addons" {
   }
   set {
     name  = "thanos.globalStaticIpName"
-    value = var.is_global? "thanos" : "thanos-${var.cluster}"
+    value = var.is_global ? "thanos" : "thanos-${var.cluster}"
   }
   set {
     name  = "isGlobal"
@@ -75,7 +75,7 @@ resource "helm_release" "kube-prometheus" {
   }
   set {
     name  = "grafana.ingress.annotations.\"kubernetes\\.io/ingress\\.global-static-ip-name\""
-    value = var.is_global? "grafana" : "grafana-${var.cluster}"
+    value = var.is_global ? "grafana" : "grafana-${var.cluster}"
   }
   set {
     name  = "prometheus.prometheusSpec.externalLabels.environment"

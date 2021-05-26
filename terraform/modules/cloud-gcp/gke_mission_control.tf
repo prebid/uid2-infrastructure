@@ -81,6 +81,7 @@ module "mission_control_monitoring" {
   cluster               = "mission-control"
   environment           = var.environment
   is_global             = true
+  mission_control_ips   = google_compute_address.mission_control.*.address
   iap_brand             = google_iap_brand.mission_control.name
   thanos_query_backends = ["thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
 }
