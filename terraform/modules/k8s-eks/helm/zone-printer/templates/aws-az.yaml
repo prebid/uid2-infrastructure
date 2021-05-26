@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: py-az
+  name: py-az
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: py-az
+  template:
+    metadata:
+      labels:
+        app: py-az
+    spec:
+      containers:
+      - image: public.ecr.aws/b5x3e7x1/eks-py-az
+        name: eks-py-az
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  labels:
+    app: py-az
+  name: py-az
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
+    nodePort: {{ .Values.nodePort }}
+  type: NodePort
+  selector:
+    app: py-az
+status:
+  loadBalancer: {}
+---
+apiVersion: elbv2.k8s.aws/v1alpha1
+kind: TargetGroupBinding
+metadata:
+  name: zone-printer-v2
+spec:
+  serviceRef:
+    name: py-az
+    port: 80
+  targetGroupARN: {{ .Values.targetGroupARN }}
+---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: zone-printer
+#  annotations:
+#    kubernetes.io/ingress.class: alb
+#    alb.ingress.kubernetes.io/scheme: internet-facing
+#spec:
+#  defaultBackend:
+#    service:
+#      name: py-az
+#      port:
+#        number: 80

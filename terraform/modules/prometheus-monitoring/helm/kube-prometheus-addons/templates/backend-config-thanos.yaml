@@ -1,0 +1,11 @@
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: thanos-ingress
+spec:
+  healthCheck:
+    type: HTTPS
+    requestPath: /
+    port: 30333
+  securityPolicy:
+    name: "thanos-ingress"

@@ -1,0 +1,2 @@
+tlsCertificateName: grafana-ssl-cert
+tlsThanosCertificateName: thanos-ssl-cert

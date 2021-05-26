@@ -1,0 +1,25 @@
+iapSecretName: project-iap-oauth-client
+iapClientId:
+iapClientSecret:
+tlsCertificateName:
+tlsDomain:
+tlsThanosCertificateName:
+cluster:
+project:
+domain:
+isGlobal: false
+thanos:
+  globalStaticIpName: thanos
+  grpcBackends: []
+  image: quay.io/thanos/thanos
+  version: v0.20.1
+  logLevel: info
+  mTLSEnabled: false
+  query:
+    nginxMux: true
+    grpcPort: 10901
+    sidecarService:
+      targetPort: 10901
+      selectorLabel:
+        key: app
+        value: prometheus

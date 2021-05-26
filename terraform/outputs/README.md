@@ -1,0 +1,1 @@
+This directory is reserved for passing data between jobs in CircleCI
