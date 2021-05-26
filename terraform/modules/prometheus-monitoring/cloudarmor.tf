@@ -1,4 +1,5 @@
 resource "google_compute_security_policy" "thanos" {
+  count = var.is_global ? 1 : 0
   name = "thanos-ingress"
 
   rule {
