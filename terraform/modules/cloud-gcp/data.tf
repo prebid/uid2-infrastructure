@@ -20,3 +20,7 @@ locals {
 data "google_project" "this" {
   project_id = local.project_id
 }
+
+data "google_compute_network" "default" {
+  name = "default"
+}

@@ -2,7 +2,7 @@ resource "google_iap_brand" "mission_control" {
   support_email     = "igusev@prebid.org"
   application_title = "grafana-iap"
   project           = data.google_project.this.number
-  depends_on = [ google_project_service.apis ]
+  depends_on        = [google_project_service.apis]
 }
 
 resource "google_container_cluster" "mission_control" {
@@ -61,25 +61,25 @@ module "gke_connect" {
   cluster_name   = google_container_cluster.mission_control["mission-control"].name
   project_number = data.google_project.this.number
   project_id     = local.project_id
-  depends_on  = [google_project_service.apis]
+  depends_on     = [google_project_service.apis]
 }
 
 resource "google_iap_web_iam_binding" "binding" {
   project = local.project_id
-  role = "roles/iap.httpsResourceAccessor"
+  role    = "roles/iap.httpsResourceAccessor"
   members = [
     "domain:prebid.org",
   ]
 }
 
 module "mission_control_monitoring" {
-  source = "../prometheus-monitoring"
-  project_id = local.project_id
-  domain_managed_zone = var.domain_managed_zone
-  location = var.regions[0]
-  cluster = "mission-control"
-  environment = var.environment
-  is_global = true
-  iap_brand = google_iap_brand.mission_control.name
-  thanos_query_backends = [ "thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
+  source                = "../prometheus-monitoring"
+  project_id            = local.project_id
+  domain_managed_zone   = var.domain_managed_zone
+  location              = var.regions[0]
+  cluster               = "mission-control"
+  environment           = var.environment
+  is_global             = true
+  iap_brand             = google_iap_brand.mission_control.name
+  thanos_query_backends = ["thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
 }
