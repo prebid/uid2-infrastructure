@@ -15,7 +15,7 @@ resource "google_container_cluster" "mission_control" {
   }
   private_cluster_config {
     enable_private_nodes    = true
-    master_ipv4_cidr_block = cidrsubnet("10.124.0.0/20", 8, 0)
+    master_ipv4_cidr_block  = cidrsubnet("10.124.0.0/20", 8, 0)
     enable_private_endpoint = false
   }
   release_channel {

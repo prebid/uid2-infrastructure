@@ -15,3 +15,7 @@ variable "domain_managed_zone" {
 
 variable "iap_brand" {
 }
+
+variable "mission_control_ips" {
+  default = []
+}

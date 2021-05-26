@@ -7,5 +7,6 @@ module "monitoring" {
   environment = var.environment
   is_global = false
   iap_brand = var.iap_brand
+  mission_control_ips = var.mission_control_ips
   # thanos_query_backends = []
 }

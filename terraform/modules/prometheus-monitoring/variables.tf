@@ -31,3 +31,7 @@ variable "iap_brand" {
 variable "environment" {
   default = "dev"
 }
+
+variable "mission_control_ips" {
+  default = []
+}
