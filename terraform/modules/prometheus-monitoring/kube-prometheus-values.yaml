@@ -96,3 +96,5 @@ alertmanager:
           }}'
         group: env:{{ .GroupLabels.environment }},stack:{{ .GroupLabels.stack }},location:{{
           .GroupLabels.location }},cluster:{{ .GroupLabels.cluster }}
+coreDns:
+  enabled: false
