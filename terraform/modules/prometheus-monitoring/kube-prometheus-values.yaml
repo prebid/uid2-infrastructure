@@ -98,3 +98,11 @@ alertmanager:
           .GroupLabels.location }},cluster:{{ .GroupLabels.cluster }}
 coreDns:
   enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeDns:
+  enabled: true
+kubeEtcd:
+  enabled: false
