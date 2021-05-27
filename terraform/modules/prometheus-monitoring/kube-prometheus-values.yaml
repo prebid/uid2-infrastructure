@@ -96,6 +96,10 @@ alertmanager:
           }}'
         group: env:{{ .GroupLabels.environment }},stack:{{ .GroupLabels.stack }},location:{{
           .GroupLabels.location }},cluster:{{ .GroupLabels.cluster }}
+  service:
+    annotations:
+      beta.cloud.google.com/backend-config: '{"default": "iap-config"}'
+    type: NodePort
 coreDns:
   enabled: false
 kubeScheduler:

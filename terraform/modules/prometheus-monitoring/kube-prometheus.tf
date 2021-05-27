@@ -70,6 +70,10 @@ resource "helm_release" "kube-prometheus" {
     value = "{grafana-${var.cluster}.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}${var.is_global ? ", grafana.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}" : ""}}"
   }
   set {
+    name  = "alertmanager.alertmanagerSpec.externalUrl"
+    value = "https://alertmanager-${var.cluster}.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}"
+  }
+  set {
     name  = "prometheus.thaonsIngress.hosts"
     value = "{thanos-${var.cluster}.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}}"
   }
