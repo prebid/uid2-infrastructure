@@ -61,6 +61,7 @@ alertmanager:
        group_by: [cluster]
        receiver: notify-critical
     receivers:
+    - name: "null"
     - name: notify-critical
       pagerduty_configs:
       - service_key: 0ee0f9a33f76490cd0928220318c1bfd
