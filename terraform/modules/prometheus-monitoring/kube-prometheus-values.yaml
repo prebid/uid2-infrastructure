@@ -58,8 +58,12 @@ alertmanager:
     global:
       resolve_timeout: 5m
     route:
-       group_by: [cluster]
-       receiver: notify-critical
+      group_by: [cluster]
+      receiver: notify-critical
+      routes:
+      - match_re:
+          severity: warning|info
+        receiver: "null"
     receivers:
     - name: "null"
     - name: notify-critical
@@ -70,7 +74,7 @@ alertmanager:
           {{ if .CommonAnnotations.dashboard_uid }}
           Related dashboard: https://grafana.uid2-dev.prebid.org/d/{{ .CommonAnnotations.dashboard_uid }}?{{ .CommonAnnotations.dashboard_params }}
           {{ else if .CommonAnnotations.global_dashboard_uid }}
-          Related dashboard: https://grafana.prod.gcp.openx.org/d/{{ .CommonAnnotations.global_dashboard_uid }}?{{ .CommonAnnotations.dashboard_params }}
+          Related dashboard: https://grafana.uid2-dev.prebid.org/d/{{ .CommonAnnotations.global_dashboard_uid }}?{{ .CommonAnnotations.dashboard_params }}
           {{ end }}
           {{ end }}
 
