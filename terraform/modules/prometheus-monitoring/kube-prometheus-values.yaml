@@ -64,6 +64,9 @@ alertmanager:
       - match_re:
           severity: warning|info
         receiver: "null"
+      - match:
+          alertname: Watchdog
+        receiver: "null"
     receivers:
     - name: "null"
     - name: notify-critical
