@@ -73,6 +73,7 @@ resource "google_iap_web_iam_binding" "binding" {
   ]
 }
 
+
 module "mission_control_monitoring" {
   source                = "../prometheus-monitoring"
   project_id            = local.project_id
@@ -83,5 +84,5 @@ module "mission_control_monitoring" {
   is_global             = true
   mission_control_ips   = google_compute_address.mission_control.*.address
   iap_brand             = google_iap_brand.mission_control.name
-  thanos_query_backends = ["thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
+  thanos_query_backends = formatlist("thanos-${var.environment}-%s-%s.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}:443", keys(local.region_to_pet), values(local.region_to_pet))
 }
