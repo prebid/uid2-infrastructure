@@ -71,7 +71,7 @@ jobs:
   plan-stage1:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
     steps:
       - checkout
       - run:
@@ -99,7 +99,7 @@ jobs:
             - .
   apply-stage1:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
     steps:
       - attach_workspace:
           at: .
@@ -125,7 +125,7 @@ jobs:
   plan-stage2:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
     steps:
       - attach_workspace:
           at: .
@@ -153,7 +153,7 @@ jobs:
             - .
   apply-stage2:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
     steps:
       - attach_workspace:
           at: .
@@ -240,7 +240,7 @@ jobs:
             - .
 #  plan-destroy:
 #    docker:
-#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
 #    steps:
 #      - attach_workspace:
 #          at: .
@@ -254,7 +254,7 @@ jobs:
 #            - .
 #  destroy:
 #    docker:
-#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.10
+#      - image: docker.mirror.hashicorp.services/hashicorp/terraform:0.14.11
 #    steps:
 #      - attach_workspace:
 #          at: .

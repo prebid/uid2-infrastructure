@@ -53,3 +53,67 @@ prometheus:
 #      objectStorageConfig:
 #        key: thanos.yaml
 #        name: thanos-objstore-config
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: [cluster]
+      receiver: notify-critical
+      routes:
+      - match_re:
+          severity: warning|info
+        receiver: "null"
+      - match:
+          alertname: Watchdog
+        receiver: "null"
+    receivers:
+    - name: "null"
+    - name: notify-critical
+      pagerduty_configs:
+      - service_key: 0ee0f9a33f76490cd0928220318c1bfd
+        description: |
+          {{ define "dashboard_url" }}
+          {{ if .CommonAnnotations.dashboard_uid }}
+          Related dashboard: https://grafana.uid2-dev.prebid.org/d/{{ .CommonAnnotations.dashboard_uid }}?{{ .CommonAnnotations.dashboard_params }}
+          {{ else if .CommonAnnotations.global_dashboard_uid }}
+          Related dashboard: https://grafana.uid2-dev.prebid.org/d/{{ .CommonAnnotations.global_dashboard_uid }}?{{ .CommonAnnotations.dashboard_params }}
+          {{ end }}
+          {{ end }}
+
+          {{ or .CommonAnnotations.message .CommonAnnotations.description }}
+
+          {{ template "dashboard_url" $ }}
+
+          {{ template "__text_alert_list" .Alerts.Firing }}
+        details:
+          firing:       '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          resolved:     '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+          num_firing:   '{{ .Alerts.Firing | len }}'
+          num_resolved: '{{ .Alerts.Resolved | len }}'
+          alertname: '{{ .GroupLabels.alertname }}'
+          application: '{{ .GroupLabels.application }}'
+          environment: '{{ .GroupLabels.environment }}'
+          cluster: '{{ .GroupLabels.cluster }}'
+          location: '{{ .GroupLabels.location }}'
+          source: alertmanager
+          stack: '{{ .GroupLabels.stack }}'
+          team: '{{ .GroupLabels.team }}'
+        severity: '{{ if .GroupLabels.priority }}{{ .GroupLabels.priority }}{{ end
+          }}'
+        group: env:{{ .GroupLabels.environment }},stack:{{ .GroupLabels.stack }},location:{{
+          .GroupLabels.location }},cluster:{{ .GroupLabels.cluster }}
+  service:
+    annotations:
+      beta.cloud.google.com/backend-config: '{"default": "iap-config"}'
+    type: NodePort
+coreDns:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeDns:
+  enabled: true
+kubeEtcd:
+  enabled: false

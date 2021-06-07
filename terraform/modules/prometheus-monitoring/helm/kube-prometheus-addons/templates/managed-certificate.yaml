@@ -17,3 +17,4 @@ metadata:
 spec:
   domains:
     - thanos-{{ .Values.cluster }}.{{ .Values.tlsDomain }}
+    - alertmanager-{{ .Values.cluster }}.{{ .Values.tlsDomain }}
