@@ -36,7 +36,7 @@ gsutil mb gs://${GCS_PROJECT} -p $GCS_PROJECT -b
 | --------------------------- | -------------------------------------------------------------------------------------------------------- | --------- | -------- |
 | \<env>_GOOGLE_PROJECT        | Name of the GCP project for the environment. All GKE clusters including mission control will be created here                          | plaintext | yes      |
 | \<env>_TERRAFORM_BACKEND_B64 | Terraform snippet defining backend pointing to the bucket created in previous step                       | base64    | yes      |
-| \<env>_TF_VAR_regions_B64    | List of regions across multiple clouds, for example `[ "us-east1", "us-west-1", "US West" ]`                | tf var    | yes      |
+| \<env>_TF_VAR_regions_B64    | List of regions across multiple clouds, for example `[ "us-east1", "us-west-1", "US West" ]`                | tf var \|base64    | yes      |
 | \<env>_GOOGLE_CREDENTIALS    | Terraform GCP service account json generated in previous step                                                                       | json      | yes      |
 | \<env>_AWS_ACCESS_KEY_ID     | Terraform AWS Access Key ID                                                                              | plaintext | no       |
 | \<env>_AWS_SECRET_ACCESS_KEY | Terraform AWS Secret Access Key                                                                          | plaintext | no       |
