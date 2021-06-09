@@ -18,5 +18,4 @@ variable "domain_managed_zone" {
 
 variable "iap_support_email" {
   description = "Support email address used to establish IAP brand"
-  default = "igusev@prebid.org"
 }
