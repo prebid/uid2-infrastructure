@@ -2,6 +2,7 @@ module "gcp" {
   source = "../modules/cloud-gcp"
   environment = var.environment
   regions = local.gcp_regions
+  iap_support_email = var.iap_support_email
 }
 
 module "aws" {
