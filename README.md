@@ -43,3 +43,4 @@ gsutil mb gs://${GCS_PROJECT} -p $GCS_PROJECT -b
 
 
 - Create a new branch to match the environment name, use live- prefix
+- enable Compute API
