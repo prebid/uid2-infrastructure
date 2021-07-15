@@ -7,6 +7,7 @@ resource "google_project_service" "apis" {
     "gkehub.googleapis.com",
     "multiclusteringress.googleapis.com",
     "iap.googleapis.com",
+    "iam.googleapis.com",
   ])
 
   service = each.key
