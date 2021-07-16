@@ -38,6 +38,7 @@ workflows:
       - apply-stage1:
           requires:
             - plan-stage1
+            - hold-stage1
           <<: *live_only
       - plan-stage2:
           requires:
@@ -51,6 +52,7 @@ workflows:
       - apply-stage2:
           requires:
             - plan-stage2
+            - hold-stage2
           <<: *live_only
 #      - fleet-install:
 #          requires:
