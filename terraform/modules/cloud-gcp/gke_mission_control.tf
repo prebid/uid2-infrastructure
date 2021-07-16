@@ -5,6 +5,11 @@ resource "google_iap_brand" "mission_control" {
   depends_on        = [google_project_service.apis]
 }
 
+resource "google_iam_workload_identity_pool" "project" {
+  provider                  = google-beta
+  workload_identity_pool_id = local.project_id
+}
+
 resource "google_container_cluster" "mission_control" {
   for_each                 = toset(["mission-control"])
   name                     = "mission-control"
