@@ -15,3 +15,7 @@ variable "regions" {
 variable "domain_managed_zone" {
   default = "uid2-0"
 }
+
+variable "iap_support_email" {
+  description = "Support email address used to establish IAP brand"
+}

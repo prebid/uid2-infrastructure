@@ -7,7 +7,7 @@ provider "helm" {
 }
 
 resource "google_container_cluster" "this" {
-  name    = local.cluster_name
+  name    = var.cluster_name
   project = local.project_id
   # Regional master
   location                 = var.region

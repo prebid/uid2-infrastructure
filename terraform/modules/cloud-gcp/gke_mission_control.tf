@@ -1,8 +1,14 @@
 resource "google_iap_brand" "mission_control" {
-  support_email     = "igusev@prebid.org"
+  support_email     = var.iap_support_email
   application_title = "grafana-iap"
   project           = data.google_project.this.number
   depends_on        = [google_project_service.apis]
+}
+
+resource "google_iam_workload_identity_pool" "project" {
+  provider                  = google-beta
+  workload_identity_pool_id = local.project_id
+  depends_on                = [google_project_service.apis]
 }
 
 resource "google_container_cluster" "mission_control" {
@@ -44,7 +50,7 @@ resource "google_container_cluster" "mission_control" {
       maximum       = 240
     }
   }
-  depends_on = [google_service_account_iam_binding.admin-account-iam]
+  depends_on = [google_service_account_iam_binding.admin-account-iam, google_project_service.apis]
 }
 
 provider "helm" {
@@ -71,7 +77,9 @@ resource "google_iap_web_iam_binding" "binding" {
   members = [
     "domain:prebid.org",
   ]
+  depends_on = [google_project_service.apis]
 }
+
 
 module "mission_control_monitoring" {
   source                = "../prometheus-monitoring"
@@ -83,5 +91,5 @@ module "mission_control_monitoring" {
   is_global             = true
   mission_control_ips   = google_compute_address.mission_control.*.address
   iap_brand             = google_iap_brand.mission_control.name
-  thanos_query_backends = ["thanos-dev-us-west1-true-roughy.uid2-dev.prebid.org:443", "thanos-dev-us-east1-settled-mustang.uid2-dev.prebid.org:443"]
+  thanos_query_backends = formatlist("thanos-${var.environment}-%s-%s.${trimsuffix(data.google_dns_managed_zone.uid2-0.dns_name, ".")}:443", keys(local.region_to_pet), values(local.region_to_pet))
 }
