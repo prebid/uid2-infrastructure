@@ -5,6 +5,12 @@ resource "google_iap_brand" "mission_control" {
   depends_on        = [google_project_service.apis]
 }
 
+resource "google_iam_workload_identity_pool" "project" {
+  provider                  = google-beta
+  workload_identity_pool_id = local.project_id
+  depends_on                = [google_project_service.apis]
+}
+
 resource "google_container_cluster" "mission_control" {
   for_each                 = toset(["mission-control"])
   name                     = "mission-control"
@@ -44,7 +50,7 @@ resource "google_container_cluster" "mission_control" {
       maximum       = 240
     }
   }
-  depends_on = [google_service_account_iam_binding.admin-account-iam]
+  depends_on = [google_service_account_iam_binding.admin-account-iam, google_project_service.apis]
 }
 
 provider "helm" {
@@ -71,6 +77,7 @@ resource "google_iap_web_iam_binding" "binding" {
   members = [
     "domain:prebid.org",
   ]
+  depends_on = [google_project_service.apis]
 }
 
 

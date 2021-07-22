@@ -41,3 +41,6 @@ gsutil mb gs://${GCS_PROJECT} -p $GCS_PROJECT -b
 | \<env>_AWS_ACCESS_KEY_ID     | Terraform AWS Access Key ID                                                                              | plaintext | no       |
 | \<env>_AWS_SECRET_ACCESS_KEY | Terraform AWS Secret Access Key                                                                          | plaintext | no       |
 
+
+- Create a new branch to match the environment name, use live- prefix
+- enable Compute API

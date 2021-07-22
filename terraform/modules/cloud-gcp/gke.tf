@@ -3,7 +3,7 @@ resource "random_pet" "gke_clusters" {
 }
 
 locals {
-  region_to_pet = {for k, v in random_pet.gke_clusters : k => v.id}
+  region_to_pet = { for k, v in random_pet.gke_clusters : k => v.id }
 }
 
 resource "local_file" "gke_modules" {
